@@ -1,0 +1,6 @@
+{
+    "shell-version": ["3.0.2"],
+    "uuid": "bible.fatcamera@gmail.com",
+    "name": "bible",
+    "description": "Bible study tool for gnome shell."
+}
