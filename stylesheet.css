@@ -1,13 +1,15 @@
+.verse-area{
+	padding: 0 30px;
+}
 .verse-label,
 .ref-label{
 	max-width: 300px;
 }
 .ref-label{
 	font-size: 0.9em;
+	font-style: italic;
 }
-.verse-area{
-	padding: 0 30px;
-}
+
 .version-button{
 	border: 2px rgba(0,0,0,0.0);
     border-radius: 5px;
