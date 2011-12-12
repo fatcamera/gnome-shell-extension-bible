@@ -1,24 +1,40 @@
-.verse-area{
-	padding: 0 30px;
+.chapter-label-wrapper{
+	padding: 10px;
 }
-.verse-label,
-.ref-label{
-	max-width: 300px;
+.chapter-label{
+	text-align:right;
+	border: 1px solid gray;
+	border-radius: 3px;
+	padding: 0 10px;
+	font-size: 2em;
 }
-.ref-label{
-	font-size: 0.9em;
-	font-style: italic;
+.chapter-number-wrapper{
+	padding: 10px;
 }
-
-.version-button{
-	border: 2px rgba(0,0,0,0.0);
-    border-radius: 5px;
-    padding: 5px;
-    color: gray;
+.chapter-number{
+	text-align: center;
+	font-size: 2em;
+	border: 3px solid gray;
+	border-radius: 5px;
+	padding: 10px;
+	margin-left: 10px;
 }
-.version-button:hover{
-	border-color: gray;
+//
+.app-panel()
+.app-panel .app-button{}
+.app-panel .app-button .app-icon{}
+.content-panel{}
+.daily-verse{padding:20px 50px;}
+.daily-verse .verse-label{width:300px;}
+.daily-verse .ref-label{
+padding-bottom:20px;
+width:300px;
+text-align:right;font-size:0.9em;font-style:italic;
 }
-.version-button.current{
-	color: white;
+.daily-verse .version-button{
+border: 2px rgba(0,0,0,0.0);
+border-radius: 5px;
+padding: 5px;
+color: gray;
 }
+.daily-verse .version-button:hover{border-color:gray;color:white;}
