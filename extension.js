@@ -472,17 +472,56 @@ const BIBLE_BOOK_ABBR_NEW = [
 	'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jas', '1Pe',
 	'2Pe', '1Jo', '2Jo', '3Jo', 'Jude', 'Re'
 ];
+function BookNavigator() { this._init.apply(this, arguments); }
+BookNavigator.prototype = {
+	_init: function(owner, locale) {
+		this._owner = owner;
+		this._actor = new St.BoxLayout({vertical:true});
+		for (let i=0;i<Math.ceil(BIBLE_BOOK_ABBR_OLD.length/7);i++){
+			let layout = new St.BoxLayout();
+			for (let j=0;j<7;j++){
+				let id = i*7+j;
+				if (id >= BIBLE_BOOK_ABBR_OLD.length) break;
+				let button = new St.Button({label:BIBLE_BOOK_ABBR_OLD[i*7+j]});
+				button.connect('clicked' Lang.bind(this, function (sender) {
+					this._owner.set_book(sender.label);
+				}));
+				layout.add_actor(button);
+			}
+			this._actor.add_actor(layout);
+		}
+		for (let i=0;i<Math.ceil(BIBLE_BOOK_ABBR_NEW.length/7);i++){
+			let layout = new St.BoxLayout();
+			for (let j=0;j<7;j++){
+				let id = i*7+j;
+				if (id >= BIBLE_BOOK_ABBR_NEW.length) break;
+				let button = new St.Button({label:BIBLE_BOOK_ABBR_NEW[i*7+j]});
+				button.connect('clicked' Lang.bind(this, function (sender) {
+					this._owner.set_book(sender.label);
+				}));
+				layout.add_actor(button);
+			}
+			this._actor.add_actor(layout);
+		}
+	},
+	get actor() { return this._actor; }
+};
 function Navigator() { this._init.apply(this, arguments); }
 Navigator.prototype = {
 	__proto__ : BibleApplication.prototype,
 	_init: function(owner) {
 		BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic', 'navigator');
 		
-		let label = new St.Label({text: 'navigator'});
-		this._actor.add_actor(label);
+		this._book = new BookNavigator(this, 'zh_CN');
+		this._container = new St.Bin({x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+		this._container.set_child(this._book.actor);
+		this._actor.add_actor(this._container);
+	},
+	set_book: function(bookname){
+		// TODO
 	}
 };
-
+// Indicator -----------------------------------------------------------
 function Indicator() {
     this._init.apply(this, arguments);
 }
