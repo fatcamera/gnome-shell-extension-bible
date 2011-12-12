@@ -11,9 +11,7 @@ const GLib = imports.gi.GLib;
 const Gettext = imports.gettext.domain('gnome-shell');
 const _ = Gettext.gettext;
 const BIBLE_VERSION = ['ChiUns', 'ChiNCVs', 'KJV'];
-function IconButton() {
-    this._init.apply(this, arguments);
-}
+function IconButton() { this._init.apply(this, arguments); }
 IconButton.prototype = {
 	_init: function(icon_name) {
 		this._button = new St.Button({ style_class: 'app-button' });
@@ -27,10 +25,7 @@ IconButton.prototype = {
     },
     get actor() { return this._button; }
 };
-
-function BibleApplication() {
-	this._init.apply(this, arguments);
-}
+function BibleApplication() { this._init.apply(this, arguments); }
 BibleApplication.prototype = {
 	_init: function(owner, icon_name, panel_style_class) {
 		this._owner = owner;
@@ -44,6 +39,7 @@ BibleApplication.prototype = {
 	get button() { return this._button; },
 	get actor() { return this._actor; }
 };
+// daily verse application ---------------------------------------------
 const DAILY_VERSE = {
 	'1-1' : '2 Corinthians 5:17',
 	'1-2' : 'Psalm 90:12',
@@ -412,9 +408,7 @@ const DAILY_VERSE = {
 	'12-30' : 'John 16:33',
 	'12-31' : 'Isaiah 43:16, 18-19'
 };
-function DailyVerse() {
-	this._init.apply(this, arguments);
-}
+function DailyVerse() { this._init.apply(this, arguments); }
 DailyVerse.prototype = {
 	__proto__ : BibleApplication.prototype,
 	_init: function(owner) {
@@ -466,10 +460,19 @@ DailyVerse.prototype = {
 		}
 	}
 };
-
-function Navigator() {
-	this._init.apply(this, arguments);
-}
+// navigator application -----------------------------------------------
+const BIBLE_BOOK_ABBR_OLD = [
+	'Ge', 'Ex', 'Le', 'Nu', 'De', 'Jos', 'Jud', 'Ru', '1Sa', '2Sa',
+	'1Ki', '2Ki', '1Ch', '2Ch2', 'Ezr', 'Ne', 'Es', 'Job', 'Ps', 'Pr',
+	'Ec', 'So', 'Isa', 'Jer', 'La', 'Eze', 'Da', 'Ho', 'Joe', 'Am', 'Ob',
+	'Jon', 'Mic', 'Na', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'
+];
+const BIBLE_BOOK_ABBR_NEW = [
+	'Mt', 'Mr', 'Lu', 'Joh', 'Ac', 'Ro', '1Co', '2Co', 'Ga', 'Eph', 'Php',
+	'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jas', '1Pe',
+	'2Pe', '1Jo', '2Jo', '3Jo', 'Jude', 'Re'
+];
+function Navigator() { this._init.apply(this, arguments); }
 Navigator.prototype = {
 	__proto__ : BibleApplication.prototype,
 	_init: function(owner) {
