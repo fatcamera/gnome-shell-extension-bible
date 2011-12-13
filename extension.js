@@ -667,7 +667,7 @@ VerseReader.prototype = {
 		try{
 			let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
 			if (success && exit_status == 0){
-				let text = stdout.replace(/^[^\d]+\d+:/mg, '')
+				let text = stdout.replace(/^[^\d]+\d+:(\d+):/mg, '$1')
 					.replace(/\u3000/g, '')
 					.replace(/\n\(.*\)\n$/, '');
 				this._verse.set_text(text);
