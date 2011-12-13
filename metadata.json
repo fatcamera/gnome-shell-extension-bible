@@ -1,6 +1,6 @@
 {
 "shell-version": ["3.0"],
-"uuid": "tool.fatcamera@gmail.com",
-"name": "tool",
-"description": "Bible study tool for gnome shell 2."
+"uuid": "bible.fatcamera@gmail.com",
+"name": "bible",
+"description": "Bible study tool for gnome shell."
 }

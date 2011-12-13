@@ -8,7 +8,8 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Pango = imports.gi.Pango;
 const GLib = imports.gi.GLib;
-const Gettext = imports.gettext.domain('gnome-shell');
+const Gtk = imports.gi.Gtk;
+const Gettext = imports.gettext;
 const _ = Gettext.gettext;
 const BIBLE_VERSION = ['ChiUns', 'ChiNCVs', 'KJV'];
 function IconButton() { this._init.apply(this, arguments); }
@@ -33,7 +34,7 @@ BibleApplication.prototype = {
 		this._actor = new St.BoxLayout({style_class: panel_style_class, vertical: true});
 		
 		this._button.actor.connect('clicked', Lang.bind(this, function(sender) {
-			this._owner.set_application(this._actor);
+			this._owner.set_application(this);
 		}));
 	},
 	get button() { return this._button; },
@@ -413,23 +414,26 @@ DailyVerse.prototype = {
 	__proto__ : BibleApplication.prototype,
 	_init: function(owner) {
 		BibleApplication.prototype._init.call(this, owner, 'zoom-original-symbolic', 'daily-verse');
-		// verse
+		// verse area
 		this._verse = new St.Label({ style_class: 'verse-label' }); // verse label
 		this._verse.clutter_text.line_wrap = true;
 		this._verse.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
 		this._verse.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-		let bin = new St.Bin({x_align: St.Align.MIDDLE});
-		bin.set_child(this._verse);
-		this._actor.add_actor(bin);
-		// ref
 		this._ref = new St.Label({ style_class: 'ref-label'}); // reference label
-		bin = new St.Bin({x_align: St.Align.MIDDLE});
-		bin.set_child(this._ref);
+		let layout = new St.BoxLayout({vertical:true});
+		layout.add_actor(this._verse);
+		layout.add_actor(this._ref);
+		let bin = new St.Bin({
+			style_class:'verse-area',
+			x_align: St.Align.MIDDLE,
+			y_align: St.Align.MIDDLE});
+		bin.set_child(layout);
 		this._actor.add_actor(bin);
-		//
-		let layout = new St.BoxLayout();
+		// control area
+		layout = new St.BoxLayout({style_class:'control-area'});
         for (let i=0;i<BIBLE_VERSION.length;i++) {
 			let button = new St.Button({ label: BIBLE_VERSION[i], style_class: 'version-button' });
+			button.set_tooltip_text(_(BIBLE_VERSION[i]));
 			button.connect('clicked', Lang.bind(this, function (sender) {
 				this._refresh(sender.label);
 			}));
@@ -448,77 +452,266 @@ DailyVerse.prototype = {
 		try{
 			let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
 			if (success && exit_status == 0){
-				stdout = stdout.replace(/^.*:\s+/mg, '')
+				let text = stdout.replace(/^.*:\s+/mg, '')
 					.replace(/\n\(.*\)\n$/, '')
-					.replace(/\n/g, '');
-				this._verse.set_text(stdout);
-				this._ref.set_text(DAILY_VERSE[timestamp]);
+					.replace(/\u3000/g, '').replace(/\n/g, '');
+				this._verse.set_text(text);
+				// update ref label
+				let book_name = stdout.match(/^([\dA-Za-z\s]+)\s+\d+:\d+/);
+				let chapter_name = DAILY_VERSE[timestamp].match(/\d+:\d+[-\d+]*/);
+				if (book_name == null || chapter_name == null) {
+					this._ref.set_text('error');
+				} else {
+					this._ref.set_text(_(book_name[1]) + ' ' + chapter_name[0]);
+				}
 			}
 		} catch (err) {
 			let title = _("Execution of '%s' failed:").format(cmd);
 			Main.notifyError(title, err.message);
 		}
-	}
+	},
+	renew: function(){}
 };
 // navigator application -----------------------------------------------
-const BIBLE_BOOK_ABBR_OLD = [
-	'Ge', 'Ex', 'Le', 'Nu', 'De', 'Jos', 'Jud', 'Ru', '1Sa', '2Sa',
-	'1Ki', '2Ki', '1Ch', '2Ch2', 'Ezr', 'Ne', 'Es', 'Job', 'Ps', 'Pr',
-	'Ec', 'So', 'Isa', 'Jer', 'La', 'Eze', 'Da', 'Ho', 'Joe', 'Am', 'Ob',
-	'Jon', 'Mic', 'Na', 'Hab', 'Zep', 'Hag', 'Zec', 'Mal'
-];
-const BIBLE_BOOK_ABBR_NEW = [
-	'Mt', 'Mr', 'Lu', 'Joh', 'Ac', 'Ro', '1Co', '2Co', 'Ga', 'Eph', 'Php',
-	'Col', '1Th', '2Th', '1Ti', '2Ti', 'Tit', 'Phm', 'Heb', 'Jas', '1Pe',
-	'2Pe', '1Jo', '2Jo', '3Jo', 'Jude', 'Re'
-];
+const BIBLE_BOOK_ABBR_OLD = {
+	'ge': 'Genesis',
+	'ex': 'Exodus',
+	'le': 'Leviticus',
+	'nu': 'Numbers',
+	'de': 'Deuteronomy',
+	'jos': 'Joshua',
+	'jdg': 'Judges',
+	'ru': 'Ruth',
+	'1sa': 'I Samuel',
+	'2sa': 'II Samuel',
+	'1ki': 'I Kings',
+	'2ki': 'II Kings',
+	'1ch': 'I Chronicles',
+	'2ch': 'II Chronicles',
+	'ezr': 'Ezra',
+	'ne': 'Nehemiah',
+	'es': 'Esther',
+	'job': 'Job',
+	'ps': 'Psalms',
+	'pr': 'Proverbs',
+	'ec': 'Ecclesiastes',
+	'so': 'Song of Solomon',
+	'isa': 'Isaiah',
+	'jer': 'Jeremiah',
+	'la': 'Lamentations',
+	'eze': 'Ezekiel',
+	'da': 'Daniel',
+	'ho': 'Hosea',
+	'joe': 'Joel',
+	'am': 'Amos',
+	'ob': 'Obadiah',
+	'jon': 'Jonah',
+	'mic': 'Micah',
+	'na': 'Nahum',
+	'hab': 'Habakkuk',
+	'zep': 'Zephaniah',
+	'hag': 'Haggai',
+	'zec': 'Zechariah',
+	'mal': 'Malachi'
+};
+const BIBLE_BOOK_ABBR_NEW = {
+	'mt': 'Matthew',
+	'mr': 'Mark',
+	'lu': 'Luke',
+	'joh': 'John',
+	'ac': 'Acts',
+	'ro': 'Romans',
+	'1co': 'I Corinthians',
+	'2co': 'II Corinthians',
+	'ga': 'Galatians',
+	'eph': 'Ephesians',
+	'php': 'Philippians',
+	'col': 'Colossians',
+	'1th': 'I Thessalonians',
+	'2th': 'II Thessalonians',
+	'1ti': 'I Timothy',
+	'2ti': 'II Timothy',
+	'tit': 'Titus',
+	'phm': 'Philemon',
+	'heb': 'Hebrews',
+	'jas': 'James',
+	'1pe': 'I Peter',
+	'2pe': 'II Peter',
+	'1jo': 'I John',
+	'2jo': 'II John',
+	'3jo': 'III John',
+	'jude': 'Jude',
+	're': 'Revelation of John'
+};
 function BookNavigator() { this._init.apply(this, arguments); }
 BookNavigator.prototype = {
-	_init: function(owner, locale) {
+	_init: function(owner) {
 		this._owner = owner;
-		this._actor = new St.BoxLayout({vertical:true});
-		for (let i=0;i<Math.ceil(BIBLE_BOOK_ABBR_OLD.length/7);i++){
-			let layout = new St.BoxLayout();
-			for (let j=0;j<7;j++){
-				let id = i*7+j;
-				if (id >= BIBLE_BOOK_ABBR_OLD.length) break;
-				let button = new St.Button({label:BIBLE_BOOK_ABBR_OLD[i*7+j]});
-				button.connect('clicked' Lang.bind(this, function (sender) {
-					this._owner.set_book(sender.label);
-				}));
-				layout.add_actor(button);
-			}
-			this._actor.add_actor(layout);
+		this._actor = new St.Table({style_class:'book-navigator'});
+		let i = 0;
+		for (let abbr in BIBLE_BOOK_ABBR_OLD){
+			let button = new St.Button({label:_(abbr)});
+			button.set_tooltip_text(_(BIBLE_BOOK_ABBR_OLD[abbr]));
+			button._origin = abbr;
+			button.connect('clicked', Lang.bind(this, function (sender) {
+				this._owner.book = sender._origin;
+			}));
+			this._actor.add(button, {row:Math.floor(i/8), col:i%8});
+			i++;
 		}
-		for (let i=0;i<Math.ceil(BIBLE_BOOK_ABBR_NEW.length/7);i++){
-			let layout = new St.BoxLayout();
-			for (let j=0;j<7;j++){
-				let id = i*7+j;
-				if (id >= BIBLE_BOOK_ABBR_NEW.length) break;
-				let button = new St.Button({label:BIBLE_BOOK_ABBR_NEW[i*7+j]});
-				button.connect('clicked' Lang.bind(this, function (sender) {
-					this._owner.set_book(sender.label);
-				}));
-				layout.add_actor(button);
-			}
-			this._actor.add_actor(layout);
+		i = 0;
+		for (let abbr in BIBLE_BOOK_ABBR_NEW){
+			let button = new St.Button({label:_(abbr)});
+			button.set_tooltip_text(_(BIBLE_BOOK_ABBR_NEW[abbr]));
+			button._origin = abbr;
+			button.connect('clicked', Lang.bind(this, function (sender) {
+				this._owner.book = sender._origin;
+			}));
+			this._actor.add(button, {row:Math.floor(i/8)+5, col:i%8});
+			i++;
 		}
 	},
 	get actor() { return this._actor; }
+};
+function ChapterNavigator() { this._init.apply(this, arguments); }
+ChapterNavigator.prototype = {
+	_init: function(owner) {
+		this._owner = owner;
+		this._actor = new St.Table({style_class:'chapter-navigator'});
+		this._label = new St.Label({text:'0',style_class:'chapter-label'});
+		this._actor.add(this._label, {row:0,col:0,col_span:3});
+		for (let i=1;i<10;i++){
+			let button = new St.Button({label:String(i)});
+			button.connect('clicked', Lang.bind(this, this._button_callback));
+			this._actor.add(button, {row:3-Math.floor((i-1)/3), col:(i-1)%3, col_span:1});
+		}
+		
+		let button = new St.Button({label:'0'});
+		button.connect('clicked', Lang.bind(this, this._button_callback));
+		this._actor.add(button, {row:4,col:0});
+		
+		let button = new St.Button({label:'C'});
+		button.connect('clicked', Lang.bind(this, this._button_callback));
+		this._actor.add(button, {row:4,col:1});
+		
+		let button = new St.Button({label:'\u23ce'});
+		button.connect('clicked', Lang.bind(this, this._button_callback));
+		this._actor.add(button, {row:4,col:2});
+	},
+	get actor() { return this._actor; },
+	set chapter(value) { this._label.set_text(String(value)); },
+	_button_callback: function(sender) {
+		switch(sender.label){
+			case 'C':
+				this._label.set_text('0');
+				break;
+			case '\u23ce':
+				if (this._label.text != '0') {
+					this._owner.chapter = parseInt(this._label.text);
+				}
+				break;
+			default:
+				let value = parseInt(this._label.text);
+				this._label.set_text(String(value * 10 + parseInt(sender.label)));
+				break;
+		}
+	}
+};
+function VerseReader() { this._init.apply(this, arguments); }
+VerseReader.prototype = {
+	_init: function(owner) {
+		this._owner = owner;
+		this._version = BIBLE_VERSION[0];
+		this._reference = '';
+		
+		this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
+		this._ref = new St.Label({text:this._reference, style_class:'ref-label'});
+		this._actor.add_actor(this._ref);
+		this._verse = new St.Label({ text:'', style_class: 'verse-label' }); // verse label
+		this._verse.clutter_text.line_wrap = true;
+		this._verse.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+		this._verse.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+		let layout = new St.BoxLayout({ vertical: true });
+        layout.add(this._verse, { y_align: St.Align.START, expand: true });
+		this._verseScroller = new St.ScrollView({
+			style_class: 'verse-scroller',
+			x_fill: true,
+			y_fill: false,
+			y_align: St.Align.START});
+		this._verseScroller.add_actor(layout);
+		this._verseScroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
+		// TODO scroll by drag
+		this._actor.add_actor(this._verseScroller);
+		// control area
+		let layout = new St.BoxLayout({style_class:'control-area'});
+        for (let i=0;i<BIBLE_VERSION.length;i++) {
+			let button = new St.Button({ label: BIBLE_VERSION[i], style_class: 'version-button' });
+			button.set_tooltip_text(_(BIBLE_VERSION[i]));
+			button.connect('clicked', Lang.bind(this, function (sender) {
+				this._version = sender.label;
+				this._refresh();
+			}));
+			layout.add_actor(button);
+		}
+		let bin = new St.Bin({x_align: St.Align.MIDDLE});
+		bin.set_child(layout);
+		this._actor.add_actor(bin);
+	},
+	get actor() { return this._actor; },
+	set_reference: function(book, chapter) {
+		this._reference = book + ' ' + chapter;
+		this._refresh();
+	},
+	_refresh: function() {
+		let cmd = 'diatheke -b ' + this._version + ' -k ' + this._reference;
+		try{
+			let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+			if (success && exit_status == 0){
+				let text = stdout.replace(/^[^\d]+\d+:/mg, '')
+					.replace(/\u3000/g, '')
+					.replace(/\n\(.*\)\n$/, '');
+				this._verse.set_text(text);
+				// update ref label
+				let result = stdout.match(/^([^\d]+)\s+(\d+)/);
+				if (result == null) {
+					this._ref.set_text('error');
+				} else {
+					this._ref.set_text(_(result[1]) + ' ' + result[2]);
+				}
+				// scroll to top
+				this._verseScroller.vscroll.adjustment.set_value(0);
+			}
+		} catch (err) {
+			this._verse.set_text(err.message);
+		}
+	}
 };
 function Navigator() { this._init.apply(this, arguments); }
 Navigator.prototype = {
 	__proto__ : BibleApplication.prototype,
 	_init: function(owner) {
 		BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic', 'navigator');
-		
-		this._book = new BookNavigator(this, 'zh_CN');
+		this._bookNavigator = new BookNavigator(this);
+		this._chapterNavigator = new ChapterNavigator(this);
+		this._verseReader = new VerseReader(this);
 		this._container = new St.Bin({x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-		this._container.set_child(this._book.actor);
+		this._container.set_child(this._bookNavigator.actor);
 		this._actor.add_actor(this._container);
+		this._book = '';
 	},
-	set_book: function(bookname){
-		// TODO
+	get book() { return this._book; },
+	set book(value) {
+		this._book = value;
+		this._chapterNavigator.chapter = 0;
+		this._container.set_child(this._chapterNavigator.actor);
+	},
+	get chapter() { return this._chapter; },
+	set chapter(value) {
+		this._verseReader.set_reference(this._book, value);
+		this._container.set_child(this._verseReader.actor);
+	},
+	renew: function(){
+		this._container.set_child(this._bookNavigator.actor);
 	}
 };
 // Indicator -----------------------------------------------------------
@@ -543,18 +736,30 @@ Indicator.prototype = {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 		
-		this._content = new St.Bin({style_class: 'content-panel', x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+		this._content = new St.Bin({style_class:'content-panel', x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
 		this._content.set_child(this._dailyVerse.actor);
 		menuitem = new PopupMenu.PopupMenuSection();
 		menuitem.addActor(this._content);
         this.menu.addMenuItem(menuitem);
+        
+        /*
+        this.menu.connect('open-state-changed', Lang.bind(this, function(sender, state) {
+			if (!state){
+				this.set_application(this._dailyVerse);
+			}
+		}));
+		*/
 	},
-	set_application: function(actor) {
-		this._content.set_child(actor);
+	set_application: function(app) {
+		app.renew();
+		this._content.set_child(app.actor);
 	}
 };
 
 function main(metadata) {
+    Gettext.bindtextdomain("gnome-shell-extension-bible", metadata.path + '/locale');
+    Gettext.textdomain("gnome-shell-extension-bible");
+
     Panel.STANDARD_TRAY_ICON_ORDER.unshift('tool');
     Panel.STANDARD_TRAY_ICON_SHELL_IMPLEMENTATION['tool'] = Indicator;
 }

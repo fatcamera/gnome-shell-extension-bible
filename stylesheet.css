@@ -1,40 +1,42 @@
-.chapter-label-wrapper{
-	padding: 10px;
+.app-panel{spacing:10px;}
+.content-panel{width:500px;height:500px;}
+/* daily verse */
+.daily-verse{padding:25px;border:1px solid gray;border-radius:5px;}
+.daily-verse .verse-area{height:300px;}
+.daily-verse .verse-label{width:400px;padding-bottom:10px;font-size:1.2em;}
+.daily-verse .ref-label{width:400px;text-align:right;font-size:0.9em;font-style:italic;}
+.daily-verse .control-area{spacing:10px;}
+.daily-verse .control-area .version-button{
+border:2px solid rgba(0,0,0,0.0);border-radius:5px;
+padding:5px;color:gray;
 }
-.chapter-label{
-	text-align:right;
-	border: 1px solid gray;
-	border-radius: 3px;
-	padding: 0 10px;
-	font-size: 2em;
+.daily-verse .control-area .version-button:hover{border-color:gray;color:white;}
+/* navigator */
+.book-navigator{spacing-rows:0px;spacing-columns:0px;}
+.book-navigator StButton{width:50px;height:50px;border:1px solid gray;border-radius:5px;}
+.book-navigator StButton:hover{border-color:white;}
+
+.chapter-navigator{spacing-rows:20px;spacing-columns:20px;}
+.chapter-navigator .chapter-label{
+width:190px;height:50px;padding:0 10px;
+font-size:2.5em;text-align:right;vertical-align:center;
+border:1px solid gray;border-radius:5px;
 }
-.chapter-number-wrapper{
-	padding: 10px;
+.chapter-navigator StButton{
+width:50px;height:50px;font-size:1.5em;
+border:1px solid gray;border-radius:5px;
 }
-.chapter-number{
-	text-align: center;
-	font-size: 2em;
-	border: 3px solid gray;
-	border-radius: 5px;
-	padding: 10px;
-	margin-left: 10px;
+.chapter-navigator StButton:hover{border-color:white;}
+
+.verse-reader .ref-label{
+font-style:bold;text-align:center;padding-bottom:5px;
 }
-//
-.app-panel()
-.app-panel .app-button{}
-.app-panel .app-button .app-icon{}
-.content-panel{}
-.daily-verse{padding:20px 50px;}
-.daily-verse .verse-label{width:300px;}
-.daily-verse .ref-label{
-padding-bottom:20px;
-width:300px;
-text-align:right;font-size:0.9em;font-style:italic;
+.verse-reader .verse-scroller{
+width:450px;height:430px;padding-bottom:10px;
 }
-.daily-verse .version-button{
-border: 2px rgba(0,0,0,0.0);
-border-radius: 5px;
-padding: 5px;
-color: gray;
+.verse-reader .control-area{spacing:10px;}
+.verse-reader .control-area .version-button{
+border:2px solid rgba(0,0,0,0.0);border-radius:5px;
+padding:5px;color:gray;
 }
-.daily-verse .version-button:hover{border-color:gray;color:white;}
+.verse-reader .control-area .version-button:hover{border-color:gray;color:white;}
