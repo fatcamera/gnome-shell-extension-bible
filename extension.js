@@ -554,7 +554,7 @@ BookNavigator.prototype = {
 			button.set_tooltip_text(_(BIBLE_BOOK_ABBR_OLD[abbr]));
 			button._origin = abbr;
 			button.connect('clicked', Lang.bind(this, function (sender) {
-				this._owner.book = sender._origin;
+				this._owner.set_book(sender._origin);
 			}));
 			this._actor.add(button, {row:Math.floor(i/8), col:i%8});
 			i++;
@@ -565,7 +565,7 @@ BookNavigator.prototype = {
 			button.set_tooltip_text(_(BIBLE_BOOK_ABBR_NEW[abbr]));
 			button._origin = abbr;
 			button.connect('clicked', Lang.bind(this, function (sender) {
-				this._owner.book = sender._origin;
+				this._owner.set_book(sender._origin);
 			}));
 			this._actor.add(button, {row:Math.floor(i/8)+5, col:i%8});
 			i++;
@@ -599,7 +599,7 @@ ChapterNavigator.prototype = {
 		this._actor.add(button, {row:4,col:2});
 	},
 	get actor() { return this._actor; },
-	set chapter(value) { this._label.set_text(String(value)); },
+	set_chapter: function(value) { this._label.set_text(String(value)); },
 	_button_callback: function(sender) {
 		switch(sender.label){
 			case 'C':
@@ -607,7 +607,7 @@ ChapterNavigator.prototype = {
 				break;
 			case '\u23ce':
 				if (this._label.text != '0') {
-					this._owner.chapter = parseInt(this._label.text);
+					this._owner.set_chapter(parseInt(this._label.text));
 				}
 				break;
 			default:
@@ -700,13 +700,13 @@ Navigator.prototype = {
 		this._book = '';
 	},
 	get book() { return this._book; },
-	set book(value) {
+	set_book: function(value) {
 		this._book = value;
-		this._chapterNavigator.chapter = 0;
+		this._chapterNavigator.set_chapter(0);
 		this._container.set_child(this._chapterNavigator.actor);
 	},
 	get chapter() { return this._chapter; },
-	set chapter(value) {
+	set_chapter: function(value) {
 		this._verseReader.set_reference(this._book, value);
 		this._container.set_child(this._verseReader.actor);
 	},
