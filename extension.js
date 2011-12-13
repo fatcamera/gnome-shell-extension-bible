@@ -714,6 +714,18 @@ Navigator.prototype = {
 		this._container.set_child(this._bookNavigator.actor);
 	}
 };
+function Search() { this._init.apply(this, arguments); }
+Search.prototype = {
+	__proto__ : BibleApplication.prototype,
+	_init: function(owner) {
+		BibleApplication.prototype._init.call(this, owner, 'zoom-fit-best-symbolic', 'navigator');
+		
+		let label = new St.Label({text:'Search: not implemented'});
+		this._actor.add_actor(label, {x_align:St.Align.MIDDLE, y_align:St.Align.MIDDLE});
+	},
+	renew: function(){
+	}
+};
 // Indicator -----------------------------------------------------------
 function Indicator() {
     this._init.apply(this, arguments);
@@ -725,9 +737,11 @@ Indicator.prototype = {
 		PanelMenu.SystemStatusButton.prototype._init.call(this, 'emblem-favorite', null);
 		this._dailyVerse = new DailyVerse(this);
 		this._navigator = new Navigator(this);
+		this._search = new Search(this);
 		let layout = new St.BoxLayout({style_class: 'app-panel'});
 		layout.add_actor(this._dailyVerse.button.actor);
 		layout.add_actor(this._navigator.button.actor);
+		layout.add_actor(this._search.button.actor);
 		let bin = new St.Bin({x_align: St.Align.MIDDLE});
         bin.set_child(layout);
         let menuitem = new PopupMenu.PopupMenuSection();
