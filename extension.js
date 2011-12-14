@@ -553,7 +553,7 @@ function BookNavigator() { this._init.apply(this, arguments); }
 BookNavigator.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic', 'book-navigator');
+        BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic');
         this._actor = new St.Table({style_class:'book-navigator'});
         //
         let i = 0;
@@ -586,9 +586,11 @@ BookNavigator.prototype = {
  */
 function ChapterNavigator() { this._init.apply(this, arguments); }
 ChapterNavigator.prototype = {
+    __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        this._owner = owner;
+        BibleApplication.prototype._init.call(this, owner, null);
         this._actor = new St.Table({style_class:'chapter-navigator'});
+        //
         this._label = new St.Label({text:'0',style_class:'chapter-label'});
         this._actor.add(this._label, {row:0,col:0,col_span:3});
         for (let i=1;i<10;i++){
@@ -609,8 +611,6 @@ ChapterNavigator.prototype = {
         button.connect('clicked', Lang.bind(this, this._button_callback));
         this._actor.add(button, {row:4,col:2});
     },
-    get actor() { return this._actor; },
-    set_chapter: function(value) { this._label.set_text(String(value)); },
     _button_callback: function(sender) {
         switch(sender.label){
             case 'C':
@@ -618,7 +618,9 @@ ChapterNavigator.prototype = {
                 break;
             case '\u23ce':
                 if (this._label.text != '0') {
-                    this._owner.set_chapter(parseInt(this._label.text));
+                    let chapter = parseInt(this._label.text);
+                    this._label.set_text('0');
+                    this._owner.set_chapter(chapter);
                 }
                 break;
             default:
@@ -630,12 +632,14 @@ ChapterNavigator.prototype = {
 };
 function VerseReader() { this._init.apply(this, arguments); }
 VerseReader.prototype = {
+    __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        this._owner = owner;
+        BibleApplication.prototype._init.call(this, owner, null);
+        this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
+        //
         this._version = BIBLE_VERSION[0];
         this._reference = '';
-        
-        this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
+        //
         this._ref = new St.Label({text:this._reference, style_class:'ref-label'});
         this._actor.add_actor(this._ref);
         this._verse = new St.Label({ text:'', style_class: 'verse-label' }); // verse label
@@ -662,13 +666,10 @@ VerseReader.prototype = {
                 this._version = sender.label;
                 this._refresh();
             }));
-            layout.add_actor(button);
+            layout.add(button, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.MIDDLE,y_fill:false,expand:false});
         }
-        let bin = new St.Bin({x_align: St.Align.MIDDLE});
-        bin.set_child(layout);
-        this._actor.add_actor(bin);
+        this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:true});
     },
-    get actor() { return this._actor; },
     set_reference: function(book, chapter) {
         this._reference = book + ' ' + chapter;
         this._refresh();
@@ -697,33 +698,10 @@ VerseReader.prototype = {
         }
     }
 };
-/*
-function Navigator() { this._init.apply(this, arguments); }
-Navigator.prototype = {
-    __proto__ : BibleApplication.prototype,
-    _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic', 'navigator');
-        this._bookNavigator = new BookNavigator(this);
-        this._chapterNavigator = new ChapterNavigator(this);
-        this._verseReader = new VerseReader(this);
-        this._container = new St.Bin({x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-        this._container.set_child(this._bookNavigator.actor);
-        this._actor.add_actor(this._container);
-        this._book = '';
-    },
-    get book() { return this._book; },
-    set_book: function(value) {
-        this._book = value;
-        this._chapterNavigator.set_chapter(0);
-        this._container.set_child(this._chapterNavigator.actor);
-    },
-    get chapter() { return this._chapter; },
-    set_chapter: function(value) {
-        this._verseReader.set_reference(this._book, value);
-        this._container.set_child(this._verseReader.actor);
-    }
-};
-*/
+/**
+ * Search:
+ * 
+ */
 function Search() { this._init.apply(this, arguments); }
 Search.prototype = {
     __proto__ : BibleApplication.prototype,
@@ -735,17 +713,25 @@ Search.prototype = {
         this._actor.add_actor(label, {x_align:St.Align.MIDDLE, y_align:St.Align.MIDDLE});
     }
 };
-// Indicator -----------------------------------------------------------
+/**
+ * Indicator:
+ * 
+ */
 function Indicator() {
     this._init.apply(this, arguments);
 }
 Indicator.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
-
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'emblem-favorite', null);
+        //
+        this._book = '';
+        this._chapter = 0;
+        //
         this._dailyVerse = new DailyVerse(this);
         this._bookNavigator = new BookNavigator(this);
+        this._chapterNavigator = new ChapterNavigator(this);
+        this._verseReader = new VerseReader(this);
         this._search = new Search(this);
         let layout = new St.BoxLayout({style_class: 'app-panel'});
         layout.add_actor(this._dailyVerse.button.actor);
@@ -769,6 +755,13 @@ Indicator.prototype = {
         this._content.set_child(app.actor);
     },
     set_book: function(bookname) {
+        this._book = bookname;
+        this.set_application(this._chapterNavigator);
+    },
+    set_chapter: function(chapter) {
+        this._chapter = chapter;
+        this._verseReader.set_reference(this._book, this._chapter);
+        this.set_application(this._verseReader);
     }
 };
 
