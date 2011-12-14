@@ -714,10 +714,30 @@ Search.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
         BibleApplication.prototype._init.call(this, owner, '\u2707');
-        this._actor = new St.BoxLayout();
+        this._actor = new St.BoxLayout({style_class:'search'});
         //
-        let label = new St.Label({text:'Search: not implemented'});
-        this._actor.add_actor(label, {x_align:St.Align.MIDDLE, y_align:St.Align.MIDDLE});
+        this._active = false;
+        this._entry = new St.Entry({style_class:'search-entry', text:'', hint_text:_('Type to search ...')});
+        this._findIcon = new St.Icon({style_class:'search-entry-icon', icon_name:'edit-find-symbolic'});
+        this._clearIcon = new St.Icon({style_class:'search-entry-icon', icon_name:'edit-clear-symbolic'});
+        this._entry.set_secondary_icon(this._findIcon);
+        this._entry.connect('secondary-icon-clicked', Lang.bind(this, function(sender){
+            if (this._active){
+                this._entry.set_text('');
+            } else {
+            }
+        }));
+        this._text = this._entry.clutter_text;
+        this._text.connect('text-changed', Lang.bind(this, this._onTextChanged));
+        this._actor.add(this._entry, {x_align:St.Align.MIDDLE, y_align:St.Align.START});
+    },
+    _onTextChanged: function (sender, prop){
+        this._active = this._entry.get_text() != '';
+        if (this._active) {
+            this._entry.set_secondary_icon(this._clearIcon);
+        } else {
+            this._entry.set_secondary_icon(this._findIcon);
+        }
     }
 };
 /**
