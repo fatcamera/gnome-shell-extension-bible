@@ -498,11 +498,16 @@ DailyVerse.prototype = {
         BibleApplication.prototype._init.call(this, owner, 'zoom-original-symbolic');
         this._actor = new St.BoxLayout({vertical:true, style_class:'daily-verse'});
         // verse area
-        this._verse = new St.Label({ style_class: 'verse-label' }); // verse label
+        this._verse = new St.Label({ style_class: 'verse-label' });
         this._verse.clutter_text.line_wrap = true;
         this._verse.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
         this._verse.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        this._ref = new St.Label({ style_class: 'ref-label'}); // reference label
+        this._ref = new St.Button({label:'', style_class:'ref-button'});
+        this._ref._book = '';
+        this._ref._chapter = 0;
+        this._ref.connect('clicked', Lang.bind(this, function(sender){
+            this._owner.set_reference(sender._book, sender._chapter);
+        }));
         this._actor.add(this._verse, {x_align:St.Align.START,x_fill:true,y_align:St.Align.MIDDLE,y_fill:false,expand:true});
         this._actor.add(this._ref, {x_align:St.Align.END,x_fill:false,y_align:St.Align.MIDDLE,y_fill:false,expand:false});
         // control area
@@ -532,16 +537,19 @@ DailyVerse.prototype = {
                 this._verse.set_text(text);
                 // update ref label
                 let book_name = stdout.match(/^([\dA-Za-z\s]+)\s+\d+:\d+/);
-                let chapter_name = DAILY_VERSE[timestamp].match(/\d+:\d+[-\d+]*/);
+                let chapter_name = DAILY_VERSE[timestamp].match(/(\d+):\d+[-\d+]*/);
                 if (book_name == null || chapter_name == null) {
-                    this._ref.set_text('error');
+                    this._ref.label = '';
+                    this._ref._book = '';
+                    this._ref._chapter = 0;
                 } else {
-                    this._ref.set_text(_(book_name[1]) + ' ' + chapter_name[0]);
+                    this._ref.label = _(book_name[1]) + ' ' + chapter_name[0];
+                    this._ref._book = book_name[1];
+                    this._ref._chapter = parseInt(chapter_name[1]);
                 }
             }
         } catch (err) {
-            let title = _("Execution of '%s' failed:").format(cmd);
-            Main.notifyError(title, err.message);
+            this._verse.set_text(err.message);
         }
     }
 };
@@ -756,6 +764,12 @@ Indicator.prototype = {
         this.set_application(this._chapterNavigator);
     },
     set_chapter: function(chapter) {
+        this._chapter = chapter;
+        this._verseReader.set_reference(this._book, this._chapter);
+        this.set_application(this._verseReader);
+    },
+    set_reference: function(bookname, chapter){
+        this._book = bookname;
         this._chapter = chapter;
         this._verseReader.set_reference(this._book, this._chapter);
         this.set_application(this._verseReader);

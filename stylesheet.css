@@ -3,7 +3,8 @@
 /* daily verse */
 .daily-verse{width:400px;height:400px;padding:25px;border:1px solid gray;border-radius:5px;}
 .daily-verse .verse-label{padding-bottom:10px;font-size:1.2em;}
-.daily-verse .ref-label{font-size:0.9em;font-style:italic;}
+.daily-verse .ref-button{font-size:0.9em;font-style:italic;color:gray;}
+.daily-verse .ref-button:hover{color:white;}
 .daily-verse .control-area{spacing:10px;}
 .daily-verse .control-area .version-button{
 border:2px solid rgba(0,0,0,0.0);border-radius:5px;
