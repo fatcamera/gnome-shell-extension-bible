@@ -476,12 +476,13 @@ function BibleApplication() { this._init.apply(this, arguments); }
 BibleApplication.prototype = {
     _init: function(owner, icon_name, panel_style_class) {
         this._owner = owner;
-        this._button = new IconButton(icon_name);
         this._actor = new St.BoxLayout({style_class: panel_style_class, vertical: true});
-        
-        this._button.actor.connect('clicked', Lang.bind(this, function(sender) {
-            this._owner.set_application(this);
-        }));
+        if (icon_name != null){
+            this._button = new IconButton(icon_name);
+            this._button.actor.connect('clicked', Lang.bind(this, function(sender) {
+                this._owner.set_application(this);
+            }));
+        } else this._button = null;
     },
     get button() { return this._button; },
     get actor() { return this._actor; }
@@ -541,8 +542,7 @@ DailyVerse.prototype = {
             let title = _("Execution of '%s' failed:").format(cmd);
             Main.notifyError(title, err.message);
         }
-    },
-    renew: function(){}
+    }
 };
 // navigator application -----------------------------------------------
 
@@ -712,9 +712,6 @@ Navigator.prototype = {
     set_chapter: function(value) {
         this._verseReader.set_reference(this._book, value);
         this._container.set_child(this._verseReader.actor);
-    },
-    renew: function(){
-        this._container.set_child(this._bookNavigator.actor);
     }
 };
 function Search() { this._init.apply(this, arguments); }
@@ -725,8 +722,6 @@ Search.prototype = {
         
         let label = new St.Label({text:'Search: not implemented'});
         this._actor.add_actor(label, {x_align:St.Align.MIDDLE, y_align:St.Align.MIDDLE});
-    },
-    renew: function(){
     }
 };
 // Indicator -----------------------------------------------------------
@@ -768,7 +763,6 @@ Indicator.prototype = {
         */
     },
     set_application: function(app) {
-        app.renew();
         this._content.set_child(app.actor);
     }
 };
