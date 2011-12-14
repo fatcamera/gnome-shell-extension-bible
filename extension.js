@@ -656,7 +656,7 @@ VerseReader.prototype = {
         this._verseScroller.add_actor(layout);
         this._verseScroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         // TODO scroll by drag
-        this._actor.add(this._verseScroller, {x_fill:true,y_fill:false,y_align: St.Align.START,expand:true});
+        this._actor.add(this._verseScroller, {x_fill:true,y_fill:true,y_align: St.Align.START,expand:true});
         // control area
         let layout = new St.BoxLayout({style_class:'control-area'});
         for (let i=0;i<BIBLE_VERSION.length;i++) {
@@ -713,7 +713,7 @@ function Search() { this._init.apply(this, arguments); }
 Search.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, '\u267a');
+        BibleApplication.prototype._init.call(this, owner, '\u2707');
         this._actor = new St.BoxLayout();
         //
         let label = new St.Label({text:'Search: not implemented'});
