@@ -753,14 +753,6 @@ Indicator.prototype = {
         menuitem = new PopupMenu.PopupMenuSection();
         menuitem.addActor(this._content);
         this.menu.addMenuItem(menuitem);
-        
-        /*
-        this.menu.connect('open-state-changed', Lang.bind(this, function(sender, state) {
-            if (!state){
-                this.set_application(this._dailyVerse);
-            }
-        }));
-        */
     },
     set_application: function(app) {
         this._content.set_child(app.actor);
