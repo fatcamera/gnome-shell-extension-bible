@@ -1,4 +1,6 @@
 .app-panel{spacing:10px;}
+.app-panel StButton{font-size:1.8em;color:gray;}
+.app-panel StButton:hover{color:white;}
 .content-panel{width:500px;height:500px;}
 /* daily verse */
 .daily-verse{width:400px;height:400px;padding:25px;border:1px solid gray;border-radius:5px;}

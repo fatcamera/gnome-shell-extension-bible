@@ -451,35 +451,17 @@ const DAILY_VERSE = {
     '12-31' : 'Isaiah 43:16, 18-19'
 };
 /**
- * IconButton:
- * 
- */
-function IconButton() { this._init.apply(this, arguments); }
-IconButton.prototype = {
-    _init: function(icon_name) {
-        this._button = new St.Button({ style_class: 'app-button' });
-        this._icon = new St.Icon({
-            icon_type: St.IconType.APPLICATION,
-            icon_name: icon_name,
-            icon_size: 22,
-            style_class: 'app-icon'
-        });
-        this._button.set_child(this._icon);
-    },
-    get actor() { return this._button; }
-};
-/**
  * BibleApplicaton:
  * 
  */
 function BibleApplication() { this._init.apply(this, arguments); }
 BibleApplication.prototype = {
-    _init: function(owner, icon_name) {
+    _init: function(owner, label_text) {
         this._owner = owner;
         this._actor = null;
-        if (icon_name != null){
-            this._button = new IconButton(icon_name);
-            this._button.actor.connect('clicked', Lang.bind(this, function(sender) {
+        if (label_text != null){
+            this._button = new St.Button({label:label_text});
+            this._button.connect('clicked', Lang.bind(this, function(sender) {
                 this._owner.set_application(this);
             }));
         } else this._button = null;
@@ -495,7 +477,7 @@ function DailyVerse() { this._init.apply(this, arguments); }
 DailyVerse.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-original-symbolic');
+        BibleApplication.prototype._init.call(this, owner, '\u263c');
         this._actor = new St.BoxLayout({vertical:true, style_class:'daily-verse'});
         // verse area
         this._verse = new St.Label({ style_class: 'verse-label' });
@@ -561,7 +543,7 @@ function BookNavigator() { this._init.apply(this, arguments); }
 BookNavigator.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic');
+        BibleApplication.prototype._init.call(this, owner, '\u2756');
         this._actor = new St.Table({style_class:'book-navigator'});
         //
         let i = 0;
@@ -642,7 +624,7 @@ function VerseReader() { this._init.apply(this, arguments); }
 VerseReader.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'format-justify-fill-symbolic');
+        BibleApplication.prototype._init.call(this, owner, '\u270e');
         this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
         //
         this._version = BIBLE_VERSION[0];
@@ -731,7 +713,7 @@ function Search() { this._init.apply(this, arguments); }
 Search.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-fit-best-symbolic');
+        BibleApplication.prototype._init.call(this, owner, '\u267a');
         this._actor = new St.BoxLayout();
         //
         let label = new St.Label({text:'Search: not implemented'});
@@ -759,10 +741,10 @@ Indicator.prototype = {
         this._verseReader = new VerseReader(this);
         this._search = new Search(this);
         let layout = new St.BoxLayout({style_class: 'app-panel'});
-        layout.add_actor(this._dailyVerse.button.actor);
-        layout.add_actor(this._bookNavigator.button.actor);
-        layout.add_actor(this._search.button.actor);
-        layout.add_actor(this._verseReader.button.actor);
+        layout.add(this._dailyVerse.button);
+        layout.add(this._bookNavigator.button);
+        layout.add(this._search.button);
+        layout.add(this._verseReader.button);
         let bin = new St.Bin({x_align: St.Align.MIDDLE});
         bin.set_child(layout);
         let menuitem = new PopupMenu.PopupMenuSection();
