@@ -1,10 +1,9 @@
 .app-panel{spacing:10px;}
 .content-panel{width:500px;height:500px;}
 /* daily verse */
-.daily-verse{padding:25px;border:1px solid gray;border-radius:5px;}
-.daily-verse .verse-area{height:300px;}
-.daily-verse .verse-label{width:400px;padding-bottom:10px;font-size:1.2em;}
-.daily-verse .ref-label{width:400px;text-align:right;font-size:0.9em;font-style:italic;}
+.daily-verse{width:400px;height:400px;padding:25px;border:1px solid gray;border-radius:5px;}
+.daily-verse .verse-label{padding-bottom:10px;font-size:1.2em;}
+.daily-verse .ref-label{font-size:0.9em;font-style:italic;}
 .daily-verse .control-area{spacing:10px;}
 .daily-verse .control-area .version-button{
 border:2px solid rgba(0,0,0,0.0);border-radius:5px;
