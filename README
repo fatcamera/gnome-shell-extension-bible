@@ -1,9 +1,11 @@
+☼✟✟✞✝✎✏✐
+
 glib = imports.gi.GLib;
 cmd = 'diatheke -b KJV -k ro 7';
 [success,argc,argv] = glib.shell_parse_argv(cmd);
 [success,pid,stdin,stdout,stderr] = glib.spawn_async_with_pipes(null,argv,null,glib.SpawnFlags.SEARCH_PATH,null,null);
 gio = imports.gi.Gio;
-stream = new gio.UnixInputStream({fd:stdout});
+stream = new gio.DataInputStream(new gio.UnixInputStream({fd:stdout}));
 
 
 
