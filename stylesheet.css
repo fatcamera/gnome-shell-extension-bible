@@ -29,7 +29,9 @@ border:1px solid gray;border-radius:5px;
 .chapter-navigator StButton:hover{border-color:white;}
 /* verse reader */
 .verse-reader{spacing:10px;width:450px;height:480px;}
-.verse-reader .ref-label{font-style:bold;}
+.verse-reader .nav-area StButton{color:gray;}
+.verse-reader .nav-area StButton:hover{color:white;}
+.verse-reader .nav-area .ref-label{font-style:bold;}
 .verse-reader .control-area{spacing:10px;}
 .verse-reader .control-area .version-button{
 border:2px solid rgba(0,0,0,0.0);border-radius:5px;

@@ -646,15 +646,29 @@ VerseReader.prototype = {
         this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
         //
         this._version = BIBLE_VERSION[0];
-        this._reference = '';
+        this._book = '';
+        this._chapter = 0;
         //
-        this._ref = new St.Label({text:this._reference, style_class:'ref-label'});
-        this._actor.add(this._ref,{x_align:St.Align.MIDDLE,x_fill:false,expand:false});
+        let layout = new St.BoxLayout({style_class:'nav-area'});
+        this._prev = new St.Button({ label:'\u25c0'});
+        this._prev.connect('clicked', Lang.bind(this, function(sender){
+            if (this._book != '') this.set_reference(this._book, this._chapter - 1);
+        }));
+        layout.add(this._prev, {x_align:St.Align.START,x_fill:false,expand:false});
+        this._ref = new St.Label({text:'', style_class:'ref-label'});
+        layout.add(this._ref,{x_align:St.Align.MIDDLE,x_fill:false,expand:true});
+        this._next = new St.Button({ label:'\u25b6' });
+        this._next.connect('clicked', Lang.bind(this, function(sender){
+            if (this._book != '') this.set_reference(this._book, this._chapter + 1);
+        }));
+        layout.add(this._next,{x_align:St.Align.END,x_fill:false,expand:false});
+        this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
+        //
         this._verse = new St.Label({ text:'', style_class: 'verse-label' }); // verse label
         this._verse.clutter_text.line_wrap = true;
         this._verse.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
         this._verse.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
-        let layout = new St.BoxLayout({ vertical: true });
+        layout = new St.BoxLayout({ vertical: true });
         layout.add(this._verse, { y_align: St.Align.START, expand: true });
         this._verseScroller = new St.ScrollView({style_class: 'verse-scroller'});
         this._verseScroller.add_actor(layout);
@@ -675,11 +689,12 @@ VerseReader.prototype = {
         this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:false});
     },
     set_reference: function(book, chapter) {
-        this._reference = book + ' ' + chapter;
+        this._book = book;
+        this._chapter = chapter;
         this._refresh();
     },
     _refresh: function() {
-        let cmd = 'diatheke -b ' + this._version + ' -k ' + this._reference;
+        let cmd = 'diatheke -b ' + this._version + ' -k ' + this._book + ' ' + this._chapter;
         try{
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
@@ -691,13 +706,19 @@ VerseReader.prototype = {
                 let result = stdout.match(/^([^\d]+)\s+(\d+)/);
                 if (result == null) {
                     this._ref.set_text('');
+                    this._book = '';
+                    this._chapter = 0;
                 } else {
                     this._ref.set_text(_(result[1]) + ' ' + result[2]);
+                    this._book = result[1];
+                    this._chapter = parseInt(result[2]);
                 }
                 // scroll to top
                 this._verseScroller.vscroll.adjustment.set_value(0);
             }
         } catch (err) {
+            this._book = '';
+            this._chapter = 0;
             this._verse.set_text(err.message);
         }
     }
