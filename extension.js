@@ -474,9 +474,9 @@ IconButton.prototype = {
  */
 function BibleApplication() { this._init.apply(this, arguments); }
 BibleApplication.prototype = {
-    _init: function(owner, icon_name, panel_style_class) {
+    _init: function(owner, icon_name) {
         this._owner = owner;
-        this._actor = new St.BoxLayout({style_class: panel_style_class, vertical: true});
+        this._actor = null;
         if (icon_name != null){
             this._button = new IconButton(icon_name);
             this._button.actor.connect('clicked', Lang.bind(this, function(sender) {
@@ -495,7 +495,8 @@ function DailyVerse() { this._init.apply(this, arguments); }
 DailyVerse.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-original-symbolic', 'daily-verse');
+        BibleApplication.prototype._init.call(this, owner, 'zoom-original-symbolic');
+        this._actor = new St.BoxLayout({vertical:true, style_class:'daily-verse'});
         // verse area
         this._verse = new St.Label({ style_class: 'verse-label' }); // verse label
         this._verse.clutter_text.line_wrap = true;
@@ -544,13 +545,17 @@ DailyVerse.prototype = {
         }
     }
 };
-// navigator application -----------------------------------------------
-
+/**
+ * BookNavigator:
+ * 
+ */
 function BookNavigator() { this._init.apply(this, arguments); }
 BookNavigator.prototype = {
+    __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        this._owner = owner;
+        BibleApplication.prototype._init.call(this, owner, 'zoom-in-symbolic', 'book-navigator');
         this._actor = new St.Table({style_class:'book-navigator'});
+        //
         let i = 0;
         for (let abbr in BIBLE_BOOK_ABBR_OLD){
             let button = new St.Button({label:_(abbr)});
@@ -573,9 +578,12 @@ BookNavigator.prototype = {
             this._actor.add(button, {row:Math.floor(i/8)+5, col:i%8});
             i++;
         }
-    },
-    get actor() { return this._actor; }
+    }
 };
+/**
+ * ChapterNavigator:
+ * 
+ */
 function ChapterNavigator() { this._init.apply(this, arguments); }
 ChapterNavigator.prototype = {
     _init: function(owner) {
@@ -689,6 +697,7 @@ VerseReader.prototype = {
         }
     }
 };
+/*
 function Navigator() { this._init.apply(this, arguments); }
 Navigator.prototype = {
     __proto__ : BibleApplication.prototype,
@@ -714,12 +723,14 @@ Navigator.prototype = {
         this._container.set_child(this._verseReader.actor);
     }
 };
+*/
 function Search() { this._init.apply(this, arguments); }
 Search.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, 'zoom-fit-best-symbolic', 'navigator');
-        
+        BibleApplication.prototype._init.call(this, owner, 'zoom-fit-best-symbolic');
+        this._actor = new St.BoxLayout();
+        //
         let label = new St.Label({text:'Search: not implemented'});
         this._actor.add_actor(label, {x_align:St.Align.MIDDLE, y_align:St.Align.MIDDLE});
     }
@@ -734,11 +745,11 @@ Indicator.prototype = {
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'emblem-favorite', null);
         this._dailyVerse = new DailyVerse(this);
-        this._navigator = new Navigator(this);
+        this._bookNavigator = new BookNavigator(this);
         this._search = new Search(this);
         let layout = new St.BoxLayout({style_class: 'app-panel'});
         layout.add_actor(this._dailyVerse.button.actor);
-        layout.add_actor(this._navigator.button.actor);
+        layout.add_actor(this._bookNavigator.button.actor);
         layout.add_actor(this._search.button.actor);
         let bin = new St.Bin({x_align: St.Align.MIDDLE});
         bin.set_child(layout);
@@ -756,6 +767,8 @@ Indicator.prototype = {
     },
     set_application: function(app) {
         this._content.set_child(app.actor);
+    },
+    set_book: function(bookname) {
     }
 };
 

@@ -10,11 +10,11 @@ border:2px solid rgba(0,0,0,0.0);border-radius:5px;
 padding:5px;color:gray;
 }
 .daily-verse .control-area .version-button:hover{border-color:gray;color:white;}
-/* navigator */
+/* book navigator */
 .book-navigator{spacing-rows:0px;spacing-columns:0px;}
 .book-navigator StButton{width:50px;height:50px;border:1px solid gray;border-radius:5px;}
 .book-navigator StButton:hover{border-color:white;}
-
+/* chapter navigator */
 .chapter-navigator{spacing-rows:20px;spacing-columns:20px;}
 .chapter-navigator .chapter-label{
 width:190px;height:50px;padding:0 10px;
@@ -26,7 +26,7 @@ width:50px;height:50px;font-size:1.5em;
 border:1px solid gray;border-radius:5px;
 }
 .chapter-navigator StButton:hover{border-color:white;}
-
+/* verse reader */
 .verse-reader .ref-label{
 font-style:bold;text-align:center;padding-bottom:5px;
 }
