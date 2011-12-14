@@ -513,7 +513,7 @@ DailyVerse.prototype = {
             button.connect('clicked', Lang.bind(this, function (sender) {
                 this._refresh(sender.label);
             }));
-            layout.add(button, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.MIDDLE,y_fill:false,expand:false});
+            layout.add(button);
         }
         this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:true});
         //
@@ -634,29 +634,25 @@ function VerseReader() { this._init.apply(this, arguments); }
 VerseReader.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
-        BibleApplication.prototype._init.call(this, owner, null);
+        BibleApplication.prototype._init.call(this, owner, 'format-justify-fill-symbolic');
         this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
         //
         this._version = BIBLE_VERSION[0];
         this._reference = '';
         //
         this._ref = new St.Label({text:this._reference, style_class:'ref-label'});
-        this._actor.add_actor(this._ref);
+        this._actor.add(this._ref,{x_align:St.Align.MIDDLE,x_fill:false,expand:false});
         this._verse = new St.Label({ text:'', style_class: 'verse-label' }); // verse label
         this._verse.clutter_text.line_wrap = true;
         this._verse.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
         this._verse.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         let layout = new St.BoxLayout({ vertical: true });
         layout.add(this._verse, { y_align: St.Align.START, expand: true });
-        this._verseScroller = new St.ScrollView({
-            style_class: 'verse-scroller',
-            x_fill: true,
-            y_fill: false,
-            y_align: St.Align.START});
+        this._verseScroller = new St.ScrollView({style_class: 'verse-scroller'});
         this._verseScroller.add_actor(layout);
         this._verseScroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
         // TODO scroll by drag
-        this._actor.add_actor(this._verseScroller);
+        this._actor.add(this._verseScroller, {x_fill:true,y_fill:false,y_align: St.Align.START,expand:true});
         // control area
         let layout = new St.BoxLayout({style_class:'control-area'});
         for (let i=0;i<BIBLE_VERSION.length;i++) {
@@ -666,9 +662,9 @@ VerseReader.prototype = {
                 this._version = sender.label;
                 this._refresh();
             }));
-            layout.add(button, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.MIDDLE,y_fill:false,expand:false});
+            layout.add(button);
         }
-        this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:true});
+        this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:false});
     },
     set_reference: function(book, chapter) {
         this._reference = book + ' ' + chapter;
@@ -686,7 +682,7 @@ VerseReader.prototype = {
                 // update ref label
                 let result = stdout.match(/^([^\d]+)\s+(\d+)/);
                 if (result == null) {
-                    this._ref.set_text('error');
+                    this._ref.set_text('');
                 } else {
                     this._ref.set_text(_(result[1]) + ' ' + result[2]);
                 }
@@ -737,6 +733,7 @@ Indicator.prototype = {
         layout.add_actor(this._dailyVerse.button.actor);
         layout.add_actor(this._bookNavigator.button.actor);
         layout.add_actor(this._search.button.actor);
+        layout.add_actor(this._verseReader.button.actor);
         let bin = new St.Bin({x_align: St.Align.MIDDLE});
         bin.set_child(layout);
         let menuitem = new PopupMenu.PopupMenuSection();
