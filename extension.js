@@ -10,6 +10,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Gettext = imports.gettext;
 const _ = Gettext.gettext;
+const SERARCH_PAGE_SIZE = 23;
 let BIBLE_VERSION = [];
 const BIBLE_BOOK = {
     'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
@@ -783,6 +784,16 @@ Search.prototype = {
         // TODO scroll by drag
         this._actor.add(this._verseScroller, {x_fill:true,y_fill:true,y_align: St.Align.START,expand:true});
         //
+    },
+	_onVerseButtonClicked: function(sender){
+        if (sender._book != '' && sender._chapter != 0)
+            this._owner.setReference(sender._book,sender._chapter);
+    },
+    _resetVerseButton: function(){
+        for (let i=0;i<SEARCH_PAGE_SIZE;i++){
+            this._verseButton[i]._book = '';
+            this._verseButton[i]._chapter = 0;
+        }
     },
     _onKeyPress: function(entry, event) {
         let symbol = event.get_key_symbol();
