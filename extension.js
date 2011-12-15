@@ -10,7 +10,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Gettext = imports.gettext;
 const _ = Gettext.gettext;
-const SERARCH_PAGE_SIZE = 23;
+const SEARCH_PAGE_SIZE = 23;
 let BIBLE_VERSION = [];
 const BIBLE_BOOK = {
     'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
@@ -778,14 +778,18 @@ Search.prototype = {
         this._actor.add(this._entry, {x_align:St.Align.MIDDLE, y_align:St.Align.START,expand:false});
         //
         this._verseContainer = new St.BoxLayout({ vertical: true });
-        this._verseScroller = new St.ScrollView({style_class: 'verse-scroller'});
-        this._verseScroller.add_actor(this._verseContainer);
-        this._verseScroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
-        // TODO scroll by drag
-        this._actor.add(this._verseScroller, {x_fill:true,y_fill:true,y_align: St.Align.START,expand:true});
-        //
+        this._verseButton = [];
+        for (let i=0;i<SEARCH_PAGE_SIZE;i++){
+            let button = new St.Button({label:''});
+            button._book = '';
+            button._chapter = 0;
+            button.connect('clicked', Lang.bind(this, this._onVerseButtonClicked));
+            this._verseButton.push(button);
+            this._verseContainer.add(button, {x_align:St.Align.START,y_align:St.Align.START,x_fill:false,y_fill:false,expand:false});
+        }
+        this._actor.add(this._verseContainer, {x_fill:true,y_fill:true,expand:true});
     },
-	_onVerseButtonClicked: function(sender){
+    _onVerseButtonClicked: function(sender){
         if (sender._book != '' && sender._chapter != 0)
             this._owner.setReference(sender._book,sender._chapter);
     },
@@ -817,14 +821,13 @@ Search.prototype = {
                 let start = stdout.indexOf('--');
                 let end = stdout.lastIndexOf('--');
                 if (start == end) {
-                    this._verseContainer.destroy_children();
-                    let label = new St.Label({text:_('Not found')});
-                    this._verseContainer.add(label);
+                    this._resetVerseButton();
+                    this._verseButton[0].set_label(_('Not found'));
                 } else {
                     stdout = stdout.substring(start+2,end);
                     let verses = stdout.split(';');
-                    let buttons = [];
-                    for (let i=0;i<Math.min(20,verses.length);i++){
+                    this._resetVerseButton();
+                    for (let i=0;i<Math.min(23,verses.length);i++){
                         let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + verses[i];
                         let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
                         if (success && exit_status == 0){
@@ -832,27 +835,16 @@ Search.prototype = {
                                 .replace(/\u3000/g, '')
                                 .replace(/\n\(.*\)\n$/, '');
                             let result = stdout.match(/^([^\d]+)\s+(\d+):(\d+)/);
-                            let button = new St.Button({label:_(result[1]) + ' ' + result[2] + ':'+result[3]+' '+text});
-                            button._book = result[1];
-                            button._chapter = parseInt(result[2]);
-                            button.connect('clicked', Lang.bind(this, function(sender){
-                                this._owner.setReference(sender._book, sender._chapter);
-                            }));
-                            buttons.push(button);
+                            this._verseButton[i].set_label(_(result[1]) + ' ' + result[2] + ':'+result[3]+' '+text);
+                            this._verseButton[i]._book = result[1];
+                            this._verseButton[i]._chapter = parseInt(result[2]);
                         }
                     }
-                    this._verseContainer.destroy_children();
-                    for (let i=0;i<buttons.length;i++){
-                        this._verseContainer.add(buttons[i],{x_align:St.Align.START,x_fill:false,y_align: St.Align.START,y_fill:false,expand: false});
-                    }
                 }
-                // scroll to top
-                this._verseScroller.vscroll.adjustment.set_value(0);
             }
         } catch (err) {
-            this._verseContainer.destroy_children();
-            let label = new St.Label({text:err.message});
-            this._verseContainer.add(label);
+            this._resetVerseButton();
+            this._verseButton[0].set_label(err.message);
         }
         return false;// for timeout_add
     }
