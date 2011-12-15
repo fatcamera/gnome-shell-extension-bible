@@ -460,7 +460,7 @@ BibleApplication.prototype = {
         if (label_text != null){
             this._button = new St.Button({label:label_text});
             this._button.connect('clicked', Lang.bind(this, function(sender) {
-                this._owner.set_application(this);
+                this._owner.setApplication(this);
             }));
         } else this._button = null;
     },
@@ -477,6 +477,7 @@ DailyVerse.prototype = {
     _init: function(owner) {
         BibleApplication.prototype._init.call(this, owner, '\u263c');
         this._actor = new St.BoxLayout({vertical:true, style_class:'daily-verse'});
+        this._versionButtons = [];
         // verse area
         this._verse = new St.Label({ style_class: 'verse-label' });
         this._verse.clutter_text.line_wrap = true;
@@ -486,7 +487,7 @@ DailyVerse.prototype = {
         this._ref._book = '';
         this._ref._chapter = 0;
         this._ref.connect('clicked', Lang.bind(this, function(sender){
-            this._owner.set_reference(sender._book, sender._chapter);
+            this._owner.setReference(sender._book, sender._chapter);
         }));
         this._actor.add(this._verse, {x_align:St.Align.START,x_fill:true,y_align:St.Align.MIDDLE,y_fill:false,expand:true});
         this._actor.add(this._ref, {x_align:St.Align.END,x_fill:false,y_align:St.Align.MIDDLE,y_fill:false,expand:false});
@@ -495,14 +496,20 @@ DailyVerse.prototype = {
         for (let i=0;i<BIBLE_VERSION.length;i++) {
             let button = new St.Button({ label: BIBLE_VERSION[i], style_class: 'version-button' });
             button.set_tooltip_text(_(BIBLE_VERSION[i]));
-            button.connect('clicked', Lang.bind(this, function (sender) {
-                this._refresh(sender.label);
-            }));
+            button.connect('clicked', Lang.bind(this, this._onVersionButtonClicked));
+            this._versionButtons.push(button);
             layout.add(button);
         }
         this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:true});
         //
-        this._refresh(BIBLE_VERSION[0]);
+        this._onVersionButtonClicked(this._versionButtons[0]);
+    },
+    _onVersionButtonClicked: function(sender){
+        for (let i=0;i<this._versionButtons.length;i++){
+            if (sender != this._versionButtons[i]) this._versionButtons[i].remove_style_class_name('current');
+        }
+        sender.add_style_class_name('current');
+        this._refresh(sender.label);
     },
     _refresh: function(version){
         let date = new Date();
@@ -550,7 +557,7 @@ BookNavigator.prototype = {
             button.set_tooltip_text(_(book));
             button._origin = book;
             button.connect('clicked', Lang.bind(this, function (sender) {
-                this._owner.set_book(sender._origin);
+                this._owner.setBook(sender._origin);
             }));
             if (BIBLE_BOOK[book].old){
                 this._actor.add(button, {row:Math.floor(i/8), col:i%8});
@@ -577,24 +584,24 @@ ChapterNavigator.prototype = {
         this._actor.add(this._label, {row:0,col:0,col_span:3});
         for (let i=1;i<10;i++){
             let button = new St.Button({label:String(i)});
-            button.connect('clicked', Lang.bind(this, this._button_callback));
+            button.connect('clicked', Lang.bind(this, this._onButtonClicked));
             this._actor.add(button, {row:3-Math.floor((i-1)/3), col:(i-1)%3, col_span:1});
         }
         
         let button = new St.Button({label:'0'});
-        button.connect('clicked', Lang.bind(this, this._button_callback));
+        button.connect('clicked', Lang.bind(this, this._onButtonClicked));
         this._actor.add(button, {row:4,col:0});
         
         let button = new St.Button({label:'C'});
-        button.connect('clicked', Lang.bind(this, this._button_callback));
+        button.connect('clicked', Lang.bind(this, this._onButtonClicked));
         this._actor.add(button, {row:4,col:1});
         
         let button = new St.Button({label:'\u23ce'});
-        button.connect('clicked', Lang.bind(this, this._button_callback));
+        button.connect('clicked', Lang.bind(this, this._onButtonClicked));
         this._actor.add(button, {row:4,col:2});
     },
     set max(value) { this._max = value; },
-    _button_callback: function(sender) {
+    _onButtonClicked: function(sender) {
         switch(sender.label){
             case 'C':
                 this._label.set_text('0');
@@ -603,7 +610,7 @@ ChapterNavigator.prototype = {
                 if (this._label.text != '0') {
                     let chapter = Math.min(parseInt(this._label.text), this._max);
                     this._label.set_text('0');
-                    this._owner.set_chapter(chapter);
+                    this._owner.setChapter(chapter);
                 }
                 break;
             default:
@@ -612,7 +619,7 @@ ChapterNavigator.prototype = {
                 value = Math.min(value, this._max);
                 if (value * 10 > this._max){
                     this._label.set_text('0');
-                    this._owner.set_chapter(value);
+                    this._owner.setChapter(value);
                 } else {
                     this._label.set_text(String(value));
                 }
@@ -630,30 +637,23 @@ VerseReader.prototype = {
         this._version = BIBLE_VERSION[0];
         this._book = '';
         this._chapter = 0;
+        this._versionButtons = [];
         //
         let layout = new St.BoxLayout({style_class:'nav-area'});
-        this._backward = new St.Button({ label:'\u25c0'});
-        this._backward.connect('clicked', Lang.bind(this, function(sender){
-            if (this._book != '') this.set_reference(BIBLE_BOOK[this._book].prev, 1);
-        }));
-        layout.add(this._backward, {x_align:St.Align.START,x_fill:false,expand:false});
-        this._prev = new St.Button({ label:'\u25c1'});
-        this._prev.connect('clicked', Lang.bind(this, function(sender){
-            if (this._book != '') this.set_reference(this._book, this._chapter - 1);
-        }));
-        layout.add(this._prev, {x_align:St.Align.START,x_fill:false,expand:false});
+        let button = new St.Button({ label:'\u25c0'});
+        button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
+        layout.add(button, {x_align:St.Align.START,x_fill:false,expand:false});
+        button = new St.Button({ label:'\u25c1'});
+        button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
+        layout.add(button, {x_align:St.Align.START,x_fill:false,expand:false});
         this._ref = new St.Label({text:'', style_class:'ref-label'});
         layout.add(this._ref,{x_align:St.Align.MIDDLE,x_fill:false,expand:true});
-        this._next = new St.Button({ label:'\u25b7' });
-        this._next.connect('clicked', Lang.bind(this, function(sender){
-            if (this._book != '') this.set_reference(this._book, this._chapter + 1);
-        }));
-        layout.add(this._next,{x_align:St.Align.END,x_fill:false,expand:false});
-        this._forward = new St.Button({ label:'\u25b6'});
-        this._forward.connect('clicked', Lang.bind(this, function(sender){
-            if (this._book != '') this.set_reference(BIBLE_BOOK[this._book].next, 1);
-        }));
-        layout.add(this._forward, {x_align:St.Align.START,x_fill:false,expand:false});
+        button = new St.Button({ label:'\u25b7' });
+        button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
+        layout.add(button,{x_align:St.Align.END,x_fill:false,expand:false});
+        button = new St.Button({ label:'\u25b6'});
+        button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
+        layout.add(button, {x_align:St.Align.END,x_fill:false,expand:false});
         this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
         //
         this._verse = new St.Label({ text:'', style_class: 'verse-label' }); // verse label
@@ -672,17 +672,33 @@ VerseReader.prototype = {
         for (let i=0;i<BIBLE_VERSION.length;i++) {
             let button = new St.Button({ label: BIBLE_VERSION[i], style_class: 'version-button' });
             button.set_tooltip_text(_(BIBLE_VERSION[i]));
-            button.connect('clicked', Lang.bind(this, function (sender) {
-                this._version = sender.label;
-                this._refresh();
-            }));
+            button.connect('clicked', Lang.bind(this, this._onVersionButtonClicked));
+            this._versionButtons.push(button);
             layout.add(button);
         }
+        this._versionButtons[0].add_style_class_name('current');
         this._actor.add(layout, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:false});
     },
-    set_reference: function(book, chapter) {
+    setReference: function(book, chapter) {
         this._book = book;
         this._chapter = chapter;
+        this._refresh();
+    },
+    _onNavButtonClicked: function(sender) {
+        if (this._book == '') return;
+        switch(sender.label){
+            case '\u25c0':this.setReference(BIBLE_BOOK[this._book].prev, 1);break;
+            case '\u25c1':this.setReference(this._book, this._chapter - 1);break;
+            case '\u25b7':this.setReference(this._book, this._chapter + 1);break;
+            case '\u25b6':this.setReference(BIBLE_BOOK[this._book].next, 1);break;
+        }
+    },
+    _onVersionButtonClicked: function(sender){
+        this._version = sender.label;
+        for (let i=0;i<this._versionButtons.length;i++){
+            if (sender != this._versionButtons[i]) this._versionButtons[i].remove_style_class_name('current');
+        }
+        sender.add_style_class_name('current');
         this._refresh();
     },
     _refresh: function() {
@@ -806,24 +822,24 @@ Indicator.prototype = {
         menuitem.addActor(this._content);
         this.menu.addMenuItem(menuitem);
     },
-    set_application: function(app) {
+    setApplication: function(app) {
         this._content.set_child(app.actor);
     },
-    set_book: function(bookname) {
+    setBook: function(bookname) {
         this._book = bookname;
         this._chapterNavigator.max = BIBLE_BOOK[bookname].chapter;
-        this.set_application(this._chapterNavigator);
+        this.setApplication(this._chapterNavigator);
     },
-    set_chapter: function(chapter) {
+    setChapter: function(chapter) {
         this._chapter = chapter;
-        this._verseReader.set_reference(this._book, this._chapter);
-        this.set_application(this._verseReader);
+        this._verseReader.setReference(this._book, this._chapter);
+        this.setApplication(this._verseReader);
     },
-    set_reference: function(bookname, chapter){
+    setReference: function(bookname, chapter){
         this._book = bookname;
         this._chapter = chapter;
-        this._verseReader.set_reference(this._book, this._chapter);
-        this.set_application(this._verseReader);
+        this._verseReader.setReference(this._book, this._chapter);
+        this.setApplication(this._verseReader);
     }
 };
 
