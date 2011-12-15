@@ -556,9 +556,7 @@ BookNavigator.prototype = {
             let button = new St.Button({label:_(BIBLE_BOOK[book].abbr)});
             button.set_tooltip_text(_(book));
             button._origin = book;
-            button.connect('clicked', Lang.bind(this, function (sender) {
-                this._owner.setBook(sender._origin);
-            }));
+            button.connect('clicked', Lang.bind(this, this._onBookButtonClicked));
             if (BIBLE_BOOK[book].old){
                 this._actor.add(button, {row:Math.floor(i/8), col:i%8});
             } else {
@@ -566,6 +564,9 @@ BookNavigator.prototype = {
             }
             i++;
         }
+    },
+    _onBookButtonClicked: function(sender){
+        this._owner.setBook(sender._origin);
     }
 };
 /**
