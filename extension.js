@@ -12,75 +12,73 @@ const Gtk = imports.gi.Gtk;
 const Gettext = imports.gettext;
 const _ = Gettext.gettext;
 const BIBLE_VERSION = ['ChiUns', 'ChiNCVs', 'KJV'];
-const BIBLE_BOOK_ABBR_OLD = {
-    'ge': 'Genesis',
-    'ex': 'Exodus',
-    'le': 'Leviticus',
-    'nu': 'Numbers',
-    'de': 'Deuteronomy',
-    'jos': 'Joshua',
-    'jdg': 'Judges',
-    'ru': 'Ruth',
-    '1sa': 'I Samuel',
-    '2sa': 'II Samuel',
-    '1ki': 'I Kings',
-    '2ki': 'II Kings',
-    '1ch': 'I Chronicles',
-    '2ch': 'II Chronicles',
-    'ezr': 'Ezra',
-    'ne': 'Nehemiah',
-    'es': 'Esther',
-    'job': 'Job',
-    'ps': 'Psalms',
-    'pr': 'Proverbs',
-    'ec': 'Ecclesiastes',
-    'so': 'Song of Solomon',
-    'isa': 'Isaiah',
-    'jer': 'Jeremiah',
-    'la': 'Lamentations',
-    'eze': 'Ezekiel',
-    'da': 'Daniel',
-    'ho': 'Hosea',
-    'joe': 'Joel',
-    'am': 'Amos',
-    'ob': 'Obadiah',
-    'jon': 'Jonah',
-    'mic': 'Micah',
-    'na': 'Nahum',
-    'hab': 'Habakkuk',
-    'zep': 'Zephaniah',
-    'hag': 'Haggai',
-    'zec': 'Zechariah',
-    'mal': 'Malachi'
-};
-const BIBLE_BOOK_ABBR_NEW = {
-    'mt': 'Matthew',
-    'mr': 'Mark',
-    'lu': 'Luke',
-    'joh': 'John',
-    'ac': 'Acts',
-    'ro': 'Romans',
-    '1co': 'I Corinthians',
-    '2co': 'II Corinthians',
-    'ga': 'Galatians',
-    'eph': 'Ephesians',
-    'php': 'Philippians',
-    'col': 'Colossians',
-    '1th': 'I Thessalonians',
-    '2th': 'II Thessalonians',
-    '1ti': 'I Timothy',
-    '2ti': 'II Timothy',
-    'tit': 'Titus',
-    'phm': 'Philemon',
-    'heb': 'Hebrews',
-    'jas': 'James',
-    '1pe': 'I Peter',
-    '2pe': 'II Peter',
-    '1jo': 'I John',
-    '2jo': 'II John',
-    '3jo': 'III John',
-    'jude': 'Jude',
-    're': 'Revelation of John'
+const BIBLE_BOOK = {
+    'Genesis': {abbr:'ge',chapter:50,old:true},
+    'Exodus': {abbr:'ex',chapter:40,old:true},
+    'Leviticus': {abbr:'le',chapter:27,old:true},
+    'Numbers': {abbr:'nu',chapter:36,old:true},
+    'Deuteronomy': {abbr:'de',chapter:34,old:true},
+    'Joshua': {abbr:'jos',chapter:24,old:true},
+    'Judges': {abbr:'jdg',chapter:21,old:true},
+    'Ruth': {abbr:'ru',chapter:4,old:true},
+    'I Samuel': {abbr:'1sa',chapter:31,old:true},
+    'II Samuel': {abbr:'2sa',chapter:24,old:true},
+    'I Kings': {abbr:'1ki',chapter:22,old:true},
+    'II Kings': {abbr:'2ki',chapter:25,old:true},
+    'I Chronicles': {abbr:'1ch',chapter:29,old:true},
+    'II Chronicles': {abbr:'2ch',chapter:36,old:true},
+    'Ezra': {abbr:'ezr',chapter:10,old:true},
+    'Nehemiah': {abbr:'ne',chapter:13,old:true},
+    'Esther': {abbr:'es',chapter:10,old:true},
+    'Job': {abbr:'job',chapter:42,old:true},
+    'Psalms': {abbr:'ps',chapter:150,old:true},
+    'Proverbs': {abbr:'pr',chapter:31,old:true},
+    'Ecclesiastes': {abbr:'ec',chapter:12,old:true},
+    'Song of Solomon': {abbr:'so',chapter:8,old:true},
+    'Isaiah': {abbr:'isa',chapter:66,old:true},
+    'Jeremiah': {abbr:'jer',chapter:52,old:true},
+    'Lamentations': {abbr:'la',chapter:5,old:true},
+    'Ezekiel': {abbr:'eze',chapter:48,old:true},
+    'Daniel': {abbr:'da',chapter:12,old:true},
+    'Hosea': {abbr:'ho',chapter:14,old:true},
+    'Joel': {abbr:'joe',chapter:3,old:true},
+    'Amos': {abbr:'am',chapter:9,old:true},
+    'Obadiah': {abbr:'ob',chapter:1,old:true},
+    'Jonah': {abbr:'jon',chapter:4,old:true},
+    'Micah': {abbr:'mic',chapter:7,old:true},
+    'Nahum': {abbr:'na',chapter:3,old:true},
+    'Habakkuk': {abbr:'hab',chapter:3,old:true},
+    'Zephaniah': {abbr:'zep',chapter:3,old:true},
+    'Haggai': {abbr:'hag',chapter:2,old:true},
+    'Zechariah': {abbr:'zec',chapter:14,old:true},
+    'Malachi': {abbr:'mal',chapter:4,old:true},
+    'Matthew': {abbr:'mt',chapter:28,old:false},
+    'Mark': {abbr:'mr',chapter:16,old:false},
+    'Luke': {abbr:'lu',chapter:24,old:false},
+    'John': {abbr:'joh',chapter:21,old:false},
+    'Acts': {abbr:'ac',chapter:28,old:false},
+    'Romans': {abbr:'ro',chapter:16,old:false},
+    'I Corinthians': {abbr:'1co',chapter:16,old:false},
+    'II Corinthians': {abbr:'2co',chapter:13,old:false},
+    'Galatians': {abbr:'ga',chapter:6,old:false},
+    'Ephesians': {abbr:'eph',chapter:6,old:false},
+    'Philippians': {abbr:'php',chapter:4,old:false},
+    'Colossians': {abbr:'col',chapter:4,old:false},
+    'I Thessalonians': {abbr:'1th',chapter:5,old:false},
+    'II Thessalonians': {abbr:'2th',chapter:3,old:false},
+    'I Timothy': {abbr:'1ti',chapter:6,old:false},
+    'II Timothy': {abbr:'2ti',chapter:4,old:false},
+    'Titus': {abbr:'tit',chapter:3,old:false},
+    'Philemon': {abbr:'phm',chapter:1,old:false},
+    'Hebrews': {abbr:'heb',chapter:13,old:false},
+    'James': {abbr:'jas',chapter:5,old:false},
+    'I Peter': {abbr:'1pe',chapter:5,old:false},
+    'II Peter': {abbr:'2pe',chapter:3,old:false},
+    'I John': {abbr:'1jo',chapter:5,old:false},
+    'II John': {abbr:'2jo',chapter:1,old:false},
+    'III John': {abbr:'3jo',chapter:1,old:false},
+    'Jude': {abbr:'jude',chapter:1,old:false},
+    'Revelation of John': {abbr:'re',chapter:22,old:false}
 };
 const DAILY_VERSE = {
     '1-1' : '2 Corinthians 5:17',
@@ -547,25 +545,18 @@ BookNavigator.prototype = {
         this._actor = new St.Table({style_class:'book-navigator'});
         //
         let i = 0;
-        for (let abbr in BIBLE_BOOK_ABBR_OLD){
-            let button = new St.Button({label:_(abbr)});
-            button.set_tooltip_text(_(BIBLE_BOOK_ABBR_OLD[abbr]));
-            button._origin = abbr;
+        for (let book in BIBLE_BOOK){
+            let button = new St.Button({label:_(BIBLE_BOOK[book].abbr)});
+            button.set_tooltip_text(_(book));
+            button._origin = book;
             button.connect('clicked', Lang.bind(this, function (sender) {
                 this._owner.set_book(sender._origin);
             }));
-            this._actor.add(button, {row:Math.floor(i/8), col:i%8});
-            i++;
-        }
-        i = 0;
-        for (let abbr in BIBLE_BOOK_ABBR_NEW){
-            let button = new St.Button({label:_(abbr)});
-            button.set_tooltip_text(_(BIBLE_BOOK_ABBR_NEW[abbr]));
-            button._origin = abbr;
-            button.connect('clicked', Lang.bind(this, function (sender) {
-                this._owner.set_book(sender._origin);
-            }));
-            this._actor.add(button, {row:Math.floor(i/8)+5, col:i%8});
+            if (BIBLE_BOOK[book].old){
+                this._actor.add(button, {row:Math.floor(i/8), col:i%8});
+            } else {
+                this._actor.add(button, {row:Math.floor((i+1)/8), col:(i+1)%8});
+            }
             i++;
         }
     }
@@ -581,6 +572,7 @@ ChapterNavigator.prototype = {
         BibleApplication.prototype._init.call(this, owner, null);
         this._actor = new St.Table({style_class:'chapter-navigator'});
         //
+        this._max = 0;
         this._label = new St.Label({text:'0',style_class:'chapter-label'});
         this._actor.add(this._label, {row:0,col:0,col_span:3});
         for (let i=1;i<10;i++){
@@ -601,6 +593,7 @@ ChapterNavigator.prototype = {
         button.connect('clicked', Lang.bind(this, this._button_callback));
         this._actor.add(button, {row:4,col:2});
     },
+    set max(value) { this._max = value; },
     _button_callback: function(sender) {
         switch(sender.label){
             case 'C':
@@ -608,14 +601,21 @@ ChapterNavigator.prototype = {
                 break;
             case '\u23ce':
                 if (this._label.text != '0') {
-                    let chapter = parseInt(this._label.text);
+                    let chapter = Math.min(parseInt(this._label.text), this._max);
                     this._label.set_text('0');
                     this._owner.set_chapter(chapter);
                 }
                 break;
             default:
                 let value = parseInt(this._label.text);
-                this._label.set_text(String(value * 10 + parseInt(sender.label)));
+                value = value * 10 + parseInt(sender.label);
+                value = Math.min(value, this._max);
+                if (value * 10 > this._max){
+                    this._label.set_text('0');
+                    this._owner.set_chapter(value);
+                } else {
+                    this._label.set_text(String(value));
+                }
                 break;
         }
     }
@@ -784,6 +784,7 @@ Indicator.prototype = {
     },
     set_book: function(bookname) {
         this._book = bookname;
+        this._chapterNavigator.max = BIBLE_BOOK[bookname].chapter;
         this.set_application(this._chapterNavigator);
     },
     set_chapter: function(chapter) {
