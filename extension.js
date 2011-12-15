@@ -751,6 +751,13 @@ Search.prototype = {
     _init: function(owner) {
         BibleApplication.prototype._init.call(this, owner, '\u2707');
         this._actor = new St.BoxLayout({vertical:true,style_class:'search'});
+        this._verses = [];
+        this._page = 0;
+        //
+        let layout = new St.BoxLayout({style_class:'nav-area'});
+        let button = new St.Button({ label:'\u25c0'});
+        button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
+        layout.add(button, {x_align:St.Align.START,x_fill:false,expand:false});
         //
         this._active = false;
         this._entry = new St.Entry({
@@ -775,7 +782,12 @@ Search.prototype = {
         this._entry.connect('secondary-icon-clicked', Lang.bind(this, function(sender){
             this._text.text = '';
         }));
-        this._actor.add(this._entry, {x_align:St.Align.MIDDLE, y_align:St.Align.START,expand:false});
+        layout.add(this._entry,{x_align:St.Align.MIDDLE,x_fill:true,expand:true});
+        //
+        button = new St.Button({ label:'\u25b6'});
+        button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
+        layout.add(button, {x_align:St.Align.END,x_fill:false,expand:false});
+        this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
         //
         this._verseContainer = new St.BoxLayout({ vertical: true });
         this._verseButton = [];
@@ -789,12 +801,35 @@ Search.prototype = {
         }
         this._actor.add(this._verseContainer, {x_fill:true,y_fill:true,expand:true});
     },
+    _onNavButtonClicked: function(sender){
+        if (this._verses.length == 0) return true;
+        let page = this._page;
+        switch(sender.label){
+            case '\u25c0':
+                page = Math.max(page-1,0);
+                page = Math.min(page, Math.ceil(this._verses.length/SEARCH_PAGE_SIZE)-1);
+                if (page != this._page) {
+                    this._page = page;
+                    this._refresh();
+                }
+                break;
+            case '\u25b6':
+                page = Math.max(page+1,0);
+                page = Math.min(page, Math.ceil(this._verses.length/SEARCH_PAGE_SIZE)-1);
+                if (page != this._page) {
+                    this._page = page;
+                    this._refresh();
+                }
+                break;
+        }
+    },
     _onVerseButtonClicked: function(sender){
         if (sender._book != '' && sender._chapter != 0)
             this._owner.setReference(sender._book,sender._chapter);
     },
     _resetVerseButton: function(){
         for (let i=0;i<SEARCH_PAGE_SIZE;i++){
+            this._verseButton[i].set_label('');
             this._verseButton[i]._book = '';
             this._verseButton[i]._chapter = 0;
         }
@@ -813,6 +848,24 @@ Search.prototype = {
         }
         return false;
     },
+    _refresh: function(){
+        this._resetVerseButton();
+        for (let i=SEARCH_PAGE_SIZE*this._page;
+            i<Math.min(this._verses.length, SEARCH_PAGE_SIZE*(this._page+1));i++){
+            let current = this._verses[i];
+            let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + current.book + ' ' + current.chapter + ':' + current.verse;
+            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+            if (success && exit_status == 0){
+                let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
+                    .replace(/\u3000/g, '')
+                    .replace(/\n\(.*\)\n$/, '');
+                let button = this._verseButton[i%SEARCH_PAGE_SIZE];
+                button.set_label(_(current.book) + ' ' + current.chapter + ':'+current.verse+' '+text);
+                button._book = current.book;
+                button._chapter = current.chapter;
+            }
+        }
+    },
     _doSearch: function(keyword){
         let cmd = 'diatheke -b ChiUns -s phrase -k ' + keyword;
         try{
@@ -821,29 +874,26 @@ Search.prototype = {
                 let start = stdout.indexOf('--');
                 let end = stdout.lastIndexOf('--');
                 if (start == end) {
-                    this._resetVerseButton();
+                    this._verses = [];
+                    this._page = 0;
+                    this._refresh();
                     this._verseButton[0].set_label(_('Not found'));
                 } else {
                     stdout = stdout.substring(start+2,end);
-                    let verses = stdout.split(';');
-                    this._resetVerseButton();
-                    for (let i=0;i<Math.min(23,verses.length);i++){
-                        let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + verses[i];
-                        let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-                        if (success && exit_status == 0){
-                            let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
-                                .replace(/\u3000/g, '')
-                                .replace(/\n\(.*\)\n$/, '');
-                            let result = stdout.match(/^([^\d]+)\s+(\d+):(\d+)/);
-                            this._verseButton[i].set_label(_(result[1]) + ' ' + result[2] + ':'+result[3]+' '+text);
-                            this._verseButton[i]._book = result[1];
-                            this._verseButton[i]._chapter = parseInt(result[2]);
-                        }
+                    let seg = stdout.split(';');
+                    this._verses = [];
+                    this._page = 0;
+                    for (let i=0;i<seg.length;i++){
+                        let result = seg[i].trim().match(/([^\d]+)\s*(\d+):(\d+)/);
+                        this._verses.push({book:result[1].trim(),chapter:parseInt(result[2]),verse:parseInt(result[3])});
                     }
+                    this._refresh();
                 }
             }
         } catch (err) {
-            this._resetVerseButton();
+            this._verses = [];
+            this._page = 0;
+            this._refresh();
             this._verseButton[0].set_label(err.message);
         }
         return false;// for timeout_add

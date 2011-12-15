@@ -45,6 +45,9 @@ padding:5px;color:gray;
 .verse-reader .control-area .version-button:hover{border-color:gray;color:white;}
 /* search */
 .search{spacing:10px;width:450px;height:480px;}
+.search .nav-area{spacing:10px;}
+.search .nav-area StButton{color:gray;}
+.search .nav-area StButton:hover{color:white;}
 .search .search-entry {
     padding:4px 12px;
     border-radius: 17px;
