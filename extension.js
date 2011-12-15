@@ -789,7 +789,7 @@ Search.prototype = {
         layout.add(button, {x_align:St.Align.END,x_fill:false,expand:false});
         this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
         //
-        this._verseContainer = new St.BoxLayout({ vertical: true });
+        this._verseContainer = new St.BoxLayout({ vertical: true, style_class:'verse-area' });
         this._verseButton = [];
         for (let i=0;i<SEARCH_PAGE_SIZE;i++){
             let button = new St.Button({label:''});
