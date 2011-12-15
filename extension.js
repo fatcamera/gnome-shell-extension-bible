@@ -11,7 +11,7 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Gettext = imports.gettext;
 const _ = Gettext.gettext;
-const BIBLE_VERSION = ['ChiUns', 'ChiNCVs', 'KJV'];
+let BIBLE_VERSION = [];
 const BIBLE_BOOK = {
     'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
     'Exodus': {abbr:'ex',chapter:40,old:true,next:'Leviticus',prev:'Genesis'},
@@ -761,6 +761,23 @@ Indicator.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'emblem-favorite', null);
+        //
+        try{
+            let cmd = 'diatheke -b system -k modulelistnames';
+            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+            if (success && exit_status == 0){
+                modules = stdout.trim().split('\n');
+                for (let i=0;i<modules.length;i++) {
+                    let cmd = 'diatheke -b info -k ' + modules[i];
+                    let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+                    if (success && exit_status == 0 && stdout.indexOf('Biblical Texts') != -1){
+                        BIBLE_VERSION.push(modules[i]);
+                    }
+                }
+            }
+        } catch (err) {
+            global.log(err.message);
+        }
         //
         this._book = '';
         this._chapter = 0;
