@@ -1,4 +1,6 @@
 const Lang = imports.lang;
+const Clutter = imports.gi.Clutter;
+const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Panel = imports.ui.panel;
 const PanelMenu = imports.ui.panelMenu;
@@ -507,6 +509,7 @@ DailyVerse.prototype = {
         }
         sender.add_style_class_name('current');
         this._refresh(sender.label);
+        return true;
     },
     _refresh: function(version){
         let date = new Date();
@@ -564,6 +567,7 @@ BookNavigator.prototype = {
     },
     _onBookButtonClicked: function(sender){
         this._owner.setBook(sender._origin);
+        return true;
     }
 };
 /**
@@ -623,8 +627,13 @@ ChapterNavigator.prototype = {
                 }
                 break;
         }
+        return true;
     }
 };
+/**
+ * VerseReader:
+ * 
+ */
 function VerseReader() { this._init.apply(this, arguments); }
 VerseReader.prototype = {
     __proto__ : BibleApplication.prototype,
@@ -683,13 +692,14 @@ VerseReader.prototype = {
         this._refresh();
     },
     _onNavButtonClicked: function(sender) {
-        if (this._book == '') return;
+        if (this._book == '') return true;
         switch(sender.label){
             case '\u25c0':this.setReference(BIBLE_BOOK[this._book].prev, 1);break;
             case '\u25c1':this.setReference(this._book, this._chapter - 1);break;
             case '\u25b7':this.setReference(this._book, this._chapter + 1);break;
             case '\u25b6':this.setReference(BIBLE_BOOK[this._book].next, 1);break;
         }
+        return true;
     },
     _onVersionButtonClicked: function(sender){
         this._version = sender.label;
@@ -698,6 +708,7 @@ VerseReader.prototype = {
         }
         sender.add_style_class_name('current');
         this._refresh();
+        return true;
     },
     _refresh: function() {
         let cmd = 'diatheke -b ' + this._version + ' -k ' + this._book + ' ' + this._chapter;
@@ -738,39 +749,108 @@ Search.prototype = {
     __proto__ : BibleApplication.prototype,
     _init: function(owner) {
         BibleApplication.prototype._init.call(this, owner, '\u2707');
-        this._actor = new St.BoxLayout({style_class:'search'});
+        this._actor = new St.BoxLayout({vertical:true,style_class:'search'});
         //
         this._active = false;
-        this._entry = new St.Entry({style_class:'search-entry', text:'', hint_text:_('Type to search ...')});
-        this._findIcon = new St.Icon({style_class:'search-entry-icon', icon_name:'edit-find-symbolic'});
-        this._clearIcon = new St.Icon({style_class:'search-entry-icon', icon_name:'edit-clear-symbolic'});
-        this._entry.set_secondary_icon(this._findIcon);
-        this._entry.connect('secondary-icon-clicked', Lang.bind(this, function(sender){
-            if (this._active){
-                this._entry.set_text('');
-            } else {
-            }
-        }));
+        this._entry = new St.Entry({
+            style_class:'search-entry',
+            text:'',
+            hint_text:_('Type to search ...')
+        });
         this._text = this._entry.clutter_text;
-        this._text.connect('text-changed', Lang.bind(this, this._onTextChanged));
-        this._actor.add(this._entry, {x_align:St.Align.MIDDLE, y_align:St.Align.START});
+        this._text.connect('key-press-event', Lang.bind(this, this._onKeyPress));
+        this._inactiveIcon = new St.Icon({
+            style_class: 'search-entry-icon',
+            icon_name: 'edit-find',
+            icon_type: St.IconType.SYMBOLIC
+        });
+        this._activeIcon = new St.Icon({
+            style_class: 'search-entry-icon',
+            icon_name: 'edit-clear',
+            icon_type: St.IconType.SYMBOLIC
+        });
+        this._entry.set_primary_icon(this._inactiveIcon);
+        this._entry.set_secondary_icon(this._activeIcon);
+        this._entry.connect('secondary-icon-clicked', Lang.bind(this, function(sender){
+            this._text.text = '';
+        }));
+        this._actor.add(this._entry, {x_align:St.Align.MIDDLE, y_align:St.Align.START,expand:false});
+        //
+        this._verseContainer = new St.BoxLayout({ vertical: true });
+        this._verseScroller = new St.ScrollView({style_class: 'verse-scroller'});
+        this._verseScroller.add_actor(this._verseContainer);
+        this._verseScroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC);
+        // TODO scroll by drag
+        this._actor.add(this._verseScroller, {x_fill:true,y_fill:true,y_align: St.Align.START,expand:true});
+        //
     },
-    _onTextChanged: function (sender, prop){
-        this._active = this._entry.get_text() != '';
-        if (this._active) {
-            this._entry.set_secondary_icon(this._clearIcon);
-        } else {
-            this._entry.set_secondary_icon(this._findIcon);
+    _onKeyPress: function(entry, event) {
+        let symbol = event.get_key_symbol();
+        if (symbol == Clutter.Escape) {
+            this._text.text = '';
+            return true;
+        } else if (symbol == Clutter.Return) {
+            let keyword = this._text.text;
+            this._text.text = '';
+            //this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch, keyword));
+            if (keyword != '') this._doSearch(keyword);
+            return true;
         }
+        return false;
+    },
+    _doSearch: function(keyword){
+        let cmd = 'diatheke -b ChiUns -s phrase -k ' + keyword;
+        try{
+            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+            if (success && exit_status == 0){
+                let start = stdout.indexOf('--');
+                let end = stdout.lastIndexOf('--');
+                if (start == end) {
+                    this._verseContainer.destroy_children();
+                    let label = new St.Label({text:_('Not found')});
+                    this._verseContainer.add(label);
+                } else {
+                    stdout = stdout.substring(start+2,end);
+                    let verses = stdout.split(';');
+                    let buttons = [];
+                    for (let i=0;i<Math.min(20,verses.length);i++){
+                        let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + verses[i];
+                        let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+                        if (success && exit_status == 0){
+                            let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
+                                .replace(/\u3000/g, '')
+                                .replace(/\n\(.*\)\n$/, '');
+                            let result = stdout.match(/^([^\d]+)\s+(\d+):(\d+)/);
+                            let button = new St.Button({label:_(result[1]) + ' ' + result[2] + ':'+result[3]+' '+text});
+                            button._book = result[1];
+                            button._chapter = parseInt(result[2]);
+                            button.connect('clicked', Lang.bind(this, function(sender){
+                                this._owner.setReference(sender._book, sender._chapter);
+                            }));
+                            buttons.push(button);
+                        }
+                    }
+                    this._verseContainer.destroy_children();
+                    for (let i=0;i<buttons.length;i++){
+                        this._verseContainer.add(buttons[i],{x_align:St.Align.START,x_fill:false,y_align: St.Align.START,y_fill:false,expand: false});
+                    }
+                }
+                // scroll to top
+                this._verseScroller.vscroll.adjustment.set_value(0);
+            }
+        } catch (err) {
+            this._verseContainer.destroy_children();
+            let label = new St.Label({text:err.message});
+            this._verseContainer.add(label);
+        }
+        return false;// for timeout_add
     }
 };
 /**
  * Indicator:
  * 
  */
-function Indicator() {
-    this._init.apply(this, arguments);
-}
+function Indicator() { this._init.apply(this, arguments); }
 Indicator.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
     _init: function() {
