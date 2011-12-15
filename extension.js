@@ -13,72 +13,72 @@ const Gettext = imports.gettext;
 const _ = Gettext.gettext;
 const BIBLE_VERSION = ['ChiUns', 'ChiNCVs', 'KJV'];
 const BIBLE_BOOK = {
-    'Genesis': {abbr:'ge',chapter:50,old:true},
-    'Exodus': {abbr:'ex',chapter:40,old:true},
-    'Leviticus': {abbr:'le',chapter:27,old:true},
-    'Numbers': {abbr:'nu',chapter:36,old:true},
-    'Deuteronomy': {abbr:'de',chapter:34,old:true},
-    'Joshua': {abbr:'jos',chapter:24,old:true},
-    'Judges': {abbr:'jdg',chapter:21,old:true},
-    'Ruth': {abbr:'ru',chapter:4,old:true},
-    'I Samuel': {abbr:'1sa',chapter:31,old:true},
-    'II Samuel': {abbr:'2sa',chapter:24,old:true},
-    'I Kings': {abbr:'1ki',chapter:22,old:true},
-    'II Kings': {abbr:'2ki',chapter:25,old:true},
-    'I Chronicles': {abbr:'1ch',chapter:29,old:true},
-    'II Chronicles': {abbr:'2ch',chapter:36,old:true},
-    'Ezra': {abbr:'ezr',chapter:10,old:true},
-    'Nehemiah': {abbr:'ne',chapter:13,old:true},
-    'Esther': {abbr:'es',chapter:10,old:true},
-    'Job': {abbr:'job',chapter:42,old:true},
-    'Psalms': {abbr:'ps',chapter:150,old:true},
-    'Proverbs': {abbr:'pr',chapter:31,old:true},
-    'Ecclesiastes': {abbr:'ec',chapter:12,old:true},
-    'Song of Solomon': {abbr:'so',chapter:8,old:true},
-    'Isaiah': {abbr:'isa',chapter:66,old:true},
-    'Jeremiah': {abbr:'jer',chapter:52,old:true},
-    'Lamentations': {abbr:'la',chapter:5,old:true},
-    'Ezekiel': {abbr:'eze',chapter:48,old:true},
-    'Daniel': {abbr:'da',chapter:12,old:true},
-    'Hosea': {abbr:'ho',chapter:14,old:true},
-    'Joel': {abbr:'joe',chapter:3,old:true},
-    'Amos': {abbr:'am',chapter:9,old:true},
-    'Obadiah': {abbr:'ob',chapter:1,old:true},
-    'Jonah': {abbr:'jon',chapter:4,old:true},
-    'Micah': {abbr:'mic',chapter:7,old:true},
-    'Nahum': {abbr:'na',chapter:3,old:true},
-    'Habakkuk': {abbr:'hab',chapter:3,old:true},
-    'Zephaniah': {abbr:'zep',chapter:3,old:true},
-    'Haggai': {abbr:'hag',chapter:2,old:true},
-    'Zechariah': {abbr:'zec',chapter:14,old:true},
-    'Malachi': {abbr:'mal',chapter:4,old:true},
-    'Matthew': {abbr:'mt',chapter:28,old:false},
-    'Mark': {abbr:'mr',chapter:16,old:false},
-    'Luke': {abbr:'lu',chapter:24,old:false},
-    'John': {abbr:'joh',chapter:21,old:false},
-    'Acts': {abbr:'ac',chapter:28,old:false},
-    'Romans': {abbr:'ro',chapter:16,old:false},
-    'I Corinthians': {abbr:'1co',chapter:16,old:false},
-    'II Corinthians': {abbr:'2co',chapter:13,old:false},
-    'Galatians': {abbr:'ga',chapter:6,old:false},
-    'Ephesians': {abbr:'eph',chapter:6,old:false},
-    'Philippians': {abbr:'php',chapter:4,old:false},
-    'Colossians': {abbr:'col',chapter:4,old:false},
-    'I Thessalonians': {abbr:'1th',chapter:5,old:false},
-    'II Thessalonians': {abbr:'2th',chapter:3,old:false},
-    'I Timothy': {abbr:'1ti',chapter:6,old:false},
-    'II Timothy': {abbr:'2ti',chapter:4,old:false},
-    'Titus': {abbr:'tit',chapter:3,old:false},
-    'Philemon': {abbr:'phm',chapter:1,old:false},
-    'Hebrews': {abbr:'heb',chapter:13,old:false},
-    'James': {abbr:'jas',chapter:5,old:false},
-    'I Peter': {abbr:'1pe',chapter:5,old:false},
-    'II Peter': {abbr:'2pe',chapter:3,old:false},
-    'I John': {abbr:'1jo',chapter:5,old:false},
-    'II John': {abbr:'2jo',chapter:1,old:false},
-    'III John': {abbr:'3jo',chapter:1,old:false},
-    'Jude': {abbr:'jude',chapter:1,old:false},
-    'Revelation of John': {abbr:'re',chapter:22,old:false}
+    'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
+    'Exodus': {abbr:'ex',chapter:40,old:true,next:'Leviticus',prev:'Genesis'},
+    'Leviticus': {abbr:'le',chapter:27,old:true,next:'Numbers',prev:'Exodus'},
+    'Numbers': {abbr:'nu',chapter:36,old:true,next:'Deuteronomy',prev:'Leviticus'},
+    'Deuteronomy': {abbr:'de',chapter:34,old:true,next:'Joshua',prev:'Numbers'},
+    'Joshua': {abbr:'jos',chapter:24,old:true,next:'Judges',prev:'Deuteronomy'},
+    'Judges': {abbr:'jdg',chapter:21,old:true,next:'Ruth',prev:'Joshua'},
+    'Ruth': {abbr:'ru',chapter:4,old:true,next:'I Samuel',prev:'Judges'},
+    'I Samuel': {abbr:'1sa',chapter:31,old:true,next:'II Samuel',prev:'Ruth'},
+    'II Samuel': {abbr:'2sa',chapter:24,old:true,next:'I Kings',prev:'I Samuel'},
+    'I Kings': {abbr:'1ki',chapter:22,old:true,next:'II Kings',prev:'II Samuel'},
+    'II Kings': {abbr:'2ki',chapter:25,old:true,next:'I Chronicles',prev:'I Kings'},
+    'I Chronicles': {abbr:'1ch',chapter:29,old:true,next:'II Chronicles',prev:'II Kings'},
+    'II Chronicles': {abbr:'2ch',chapter:36,old:true,next:'Ezra',prev:'I Chronicles'},
+    'Ezra': {abbr:'ezr',chapter:10,old:true,next:'Nehemiah',prev:'II Chronicles'},
+    'Nehemiah': {abbr:'ne',chapter:13,old:true,next:'Esther',prev:'Ezra'},
+    'Esther': {abbr:'es',chapter:10,old:true,next:'Job',prev:'Nehemiah'},
+    'Job': {abbr:'job',chapter:42,old:true,next:'Psalms',prev:'Esther'},
+    'Psalms': {abbr:'ps',chapter:150,old:true,next:'Proverbs',prev:'Job'},
+    'Proverbs': {abbr:'pr',chapter:31,old:true,next:'Ecclesiastes',prev:'Psalms'},
+    'Ecclesiastes': {abbr:'ec',chapter:12,old:true,next:'Song of Solomon',prev:'Proverbs'},
+    'Song of Solomon': {abbr:'so',chapter:8,old:true,next:'Isaiah',prev:'Ecclesiastes'},
+    'Isaiah': {abbr:'isa',chapter:66,old:true,next:'Jeremiah',prev:'Song of Solomon'},
+    'Jeremiah': {abbr:'jer',chapter:52,old:true,next:'Lamentations',prev:'Isaiah'},
+    'Lamentations': {abbr:'la',chapter:5,old:true,next:'Ezekiel',prev:'Jeremiah'},
+    'Ezekiel': {abbr:'eze',chapter:48,old:true,next:'Daniel',prev:'Lamentations'},
+    'Daniel': {abbr:'da',chapter:12,old:true,next:'Hosea',prev:'Ezekiel'},
+    'Hosea': {abbr:'ho',chapter:14,old:true,next:'Joel',prev:'Daniel'},
+    'Joel': {abbr:'joe',chapter:3,old:true,next:'Amos',prev:'Hosea'},
+    'Amos': {abbr:'am',chapter:9,old:true,next:'Obadiah',prev:'Joel'},
+    'Obadiah': {abbr:'ob',chapter:1,old:true,next:'Jonah',prev:'Amos'},
+    'Jonah': {abbr:'jon',chapter:4,old:true,next:'Micah',prev:'Obadiah'},
+    'Micah': {abbr:'mic',chapter:7,old:true,next:'Nahum',prev:'Jonah'},
+    'Nahum': {abbr:'na',chapter:3,old:true,next:'Habakkuk',prev:'Micah'},
+    'Habakkuk': {abbr:'hab',chapter:3,old:true,next:'Zephaniah',prev:'Nahum'},
+    'Zephaniah': {abbr:'zep',chapter:3,old:true,next:'Haggai',prev:'Habakkuk'},
+    'Haggai': {abbr:'hag',chapter:2,old:true,next:'Zechariah',prev:'Zephaniah'},
+    'Zechariah': {abbr:'zec',chapter:14,old:true,next:'Malachi',prev:'Haggai'},
+    'Malachi': {abbr:'mal',chapter:4,old:true,next:'Matthew',prev:'Zechariah'},
+    'Matthew': {abbr:'mt',chapter:28,old:false,next:'Mark',prev:'Malachi'},
+    'Mark': {abbr:'mr',chapter:16,old:false,next:'Luke',prev:'Matthew'},
+    'Luke': {abbr:'lu',chapter:24,old:false,next:'John',prev:'Mark'},
+    'John': {abbr:'joh',chapter:21,old:false,next:'Acts',prev:'Luke'},
+    'Acts': {abbr:'ac',chapter:28,old:false,next:'Romans',prev:'John'},
+    'Romans': {abbr:'ro',chapter:16,old:false,next:'I Corinthians',prev:'Acts'},
+    'I Corinthians': {abbr:'1co',chapter:16,old:false,next:'II Corinthians',prev:'Romans'},
+    'II Corinthians': {abbr:'2co',chapter:13,old:false,next:'Galatians',prev:'I Corinthians'},
+    'Galatians': {abbr:'ga',chapter:6,old:false,next:'Ephesians',prev:'II Corinthians'},
+    'Ephesians': {abbr:'eph',chapter:6,old:false,next:'Philippians',prev:'Galatians'},
+    'Philippians': {abbr:'php',chapter:4,old:false,next:'Colossians',prev:'Ephesians'},
+    'Colossians': {abbr:'col',chapter:4,old:false,next:'I Thessalonians',prev:'Philippians'},
+    'I Thessalonians': {abbr:'1th',chapter:5,old:false,next:'II Thessalonians',prev:'Colossians'},
+    'II Thessalonians': {abbr:'2th',chapter:3,old:false,next:'I Timothy',prev:'I Thessalonians'},
+    'I Timothy': {abbr:'1ti',chapter:6,old:false,next:'II Timothy',prev:'II Thessalonians'},
+    'II Timothy': {abbr:'2ti',chapter:4,old:false,next:'Titus',prev:'I Timothy'},
+    'Titus': {abbr:'tit',chapter:3,old:false,next:'Philemon',prev:'II Timothy'},
+    'Philemon': {abbr:'phm',chapter:1,old:false,next:'Hebrews',prev:'Titus'},
+    'Hebrews': {abbr:'heb',chapter:13,old:false,next:'James',prev:'Philemon'},
+    'James': {abbr:'jas',chapter:5,old:false,next:'I Peter',prev:'Hebrews'},
+    'I Peter': {abbr:'1pe',chapter:5,old:false,next:'II Peter',prev:'James'},
+    'II Peter': {abbr:'2pe',chapter:3,old:false,next:'I John',prev:'I Peter'},
+    'I John': {abbr:'1jo',chapter:5,old:false,next:'II John',prev:'II Peter'},
+    'II John': {abbr:'2jo',chapter:1,old:false,next:'III John',prev:'I John'},
+    'III John': {abbr:'3jo',chapter:1,old:false,next:'Jude',prev:'II John'},
+    'Jude': {abbr:'jude',chapter:1,old:false,next:'Revelation of John',prev:'III John'},
+    'Revelation of John': {abbr:'re',chapter:22,old:false,next:'Genesis',prev:'Jude'}
 };
 const DAILY_VERSE = {
     '1-1' : '2 Corinthians 5:17',
@@ -632,18 +632,28 @@ VerseReader.prototype = {
         this._chapter = 0;
         //
         let layout = new St.BoxLayout({style_class:'nav-area'});
-        this._prev = new St.Button({ label:'\u25c0'});
+        this._backward = new St.Button({ label:'\u25c0'});
+        this._backward.connect('clicked', Lang.bind(this, function(sender){
+            if (this._book != '') this.set_reference(BIBLE_BOOK[this._book].prev, 1);
+        }));
+        layout.add(this._backward, {x_align:St.Align.START,x_fill:false,expand:false});
+        this._prev = new St.Button({ label:'\u25c1'});
         this._prev.connect('clicked', Lang.bind(this, function(sender){
             if (this._book != '') this.set_reference(this._book, this._chapter - 1);
         }));
         layout.add(this._prev, {x_align:St.Align.START,x_fill:false,expand:false});
         this._ref = new St.Label({text:'', style_class:'ref-label'});
         layout.add(this._ref,{x_align:St.Align.MIDDLE,x_fill:false,expand:true});
-        this._next = new St.Button({ label:'\u25b6' });
+        this._next = new St.Button({ label:'\u25b7' });
         this._next.connect('clicked', Lang.bind(this, function(sender){
             if (this._book != '') this.set_reference(this._book, this._chapter + 1);
         }));
         layout.add(this._next,{x_align:St.Align.END,x_fill:false,expand:false});
+        this._forward = new St.Button({ label:'\u25b6'});
+        this._forward.connect('clicked', Lang.bind(this, function(sender){
+            if (this._book != '') this.set_reference(BIBLE_BOOK[this._book].next, 1);
+        }));
+        layout.add(this._forward, {x_align:St.Align.START,x_fill:false,expand:false});
         this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
         //
         this._verse = new St.Label({ text:'', style_class: 'verse-label' }); // verse label

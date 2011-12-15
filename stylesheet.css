@@ -31,6 +31,7 @@ border:1px solid gray;border-radius:5px;
 .chapter-navigator StButton:hover{border-color:white;}
 /* verse reader */
 .verse-reader{spacing:10px;width:450px;height:480px;}
+.verse-reader .nav-area{spacing:5px;}
 .verse-reader .nav-area StButton{color:gray;}
 .verse-reader .nav-area StButton:hover{color:white;}
 .verse-reader .nav-area .ref-label{font-style:bold;}
