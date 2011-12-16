@@ -556,8 +556,7 @@ BookNavigator.prototype = {
         for (let book in BIBLE_BOOK){
             let button = new St.Button({label:_(BIBLE_BOOK[book].abbr)});
             button.set_tooltip_text(_(book));
-            button._origin = book;
-            button.connect('clicked', Lang.bind(this, this._onBookButtonClicked));
+            button.connect('clicked', Lang.bind(this, this._onBookButtonClicked, book));
             if (BIBLE_BOOK[book].old){
                 this._actor.add(button, {row:Math.floor(i/8), col:i%8});
             } else {
@@ -566,8 +565,8 @@ BookNavigator.prototype = {
             i++;
         }
     },
-    _onBookButtonClicked: function(sender){
-        this._owner.setBook(sender._origin);
+    _onBookButtonClicked: function(sender, button, book){
+        this._owner.setBook(book);
         return true;
     }
 };
@@ -744,6 +743,12 @@ VerseReader.prototype = {
 /**
  * Search:
  * 
+ * todo:
+ * entry focus, the menu closed automatically when focus move out of entry
+ * spin, show spin while searching
+ * async, search asynchorously
+ * version, allow search for any version
+ * 
  */
 function Search() { this._init.apply(this, arguments); }
 Search.prototype = {
@@ -763,7 +768,9 @@ Search.prototype = {
         this._entry = new St.Entry({
             style_class:'search-entry',
             text:'',
-            hint_text:_('Type to search ...')
+            hint_text:_('Type to search ...'),
+            track_hover: true,
+            can_focus: true
         });
         this._text = this._entry.clutter_text;
         this._text.connect('key-press-event', Lang.bind(this, this._onKeyPress));
@@ -781,6 +788,7 @@ Search.prototype = {
         this._entry.set_secondary_icon(this._activeIcon);
         this._entry.connect('secondary-icon-clicked', Lang.bind(this, function(sender){
             this._text.text = '';
+            global.stage.set_key_focus(this._text);
         }));
         layout.add(this._entry,{x_align:St.Align.MIDDLE,x_fill:true,expand:true});
         //
