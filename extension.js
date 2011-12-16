@@ -519,6 +519,7 @@ DailyVerse.prototype = {
         try{
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
+                stdout = stdout.toString();
                 let text = stdout.replace(/^.*:\s+/mg, '')
                     .replace(/\n\(.*\)\n$/, '')
                     .replace(/\u3000/g, '').replace(/\n/g, '');
@@ -715,6 +716,7 @@ VerseReader.prototype = {
         try{
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
+                stdout = stdout.toString();
                 let text = stdout.replace(/^[^\d]+\d+:(\d+):/mg, '$1')
                     .replace(/\u3000/g, '')
                     .replace(/\n\(.*\)\n$/, '');
@@ -876,6 +878,7 @@ Search.prototype = {
             let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + current.book + ' ' + current.chapter + ':' + current.verse;
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
+                stdout = stdout.toString();
                 let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
                     .replace(/\u3000/g, '')
                     .replace(/\n\(.*\)\n$/, '');
@@ -891,6 +894,7 @@ Search.prototype = {
         try{
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
+                stdout = stdout.toString();
                 let start = stdout.indexOf('--');
                 let end = stdout.lastIndexOf('--');
                 if (start == end) {
@@ -935,45 +939,46 @@ Indicator.prototype = {
             let cmd = 'diatheke -b system -k modulelistnames';
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
+                stdout = stdout.toString();
                 modules = stdout.trim().split('\n');
                 for (let i=0;i<modules.length;i++) {
                     let cmd = 'diatheke -b info -k ' + modules[i];
                     let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-                    if (success && exit_status == 0 && stdout.indexOf('Biblical Texts') != -1){
+                    if (success && exit_status == 0 && stdout.toString().indexOf('Biblical Texts') != -1){
                         BIBLE_VERSION.push(modules[i]);
                     }
                 }
             }
+            //
+            this._book = '';
+            this._chapter = 0;
+            //
+            this._dailyVerse = new DailyVerse(this);
+            this._bookNavigator = new BookNavigator(this);
+            this._chapterNavigator = new ChapterNavigator(this);
+            this._verseReader = new VerseReader(this);
+            this._search = new Search(this);
+            let layout = new St.BoxLayout({style_class: 'app-panel'});
+            layout.add(this._dailyVerse.button);
+            layout.add(this._bookNavigator.button);
+            layout.add(this._search.button);
+            layout.add(this._verseReader.button);
+            let bin = new St.Bin({x_align: St.Align.MIDDLE});
+            bin.set_child(layout);
+            let menuitem = new PopupMenu.PopupMenuSection();
+            menuitem.addActor(bin);
+            this.menu.addMenuItem(menuitem);
+
+            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            
+            this._content = new St.Bin({style_class:'content-panel', x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
+            this._content.set_child(this._dailyVerse.actor);
+            menuitem = new PopupMenu.PopupMenuSection();
+            menuitem.addActor(this._content);
+            this.menu.addMenuItem(menuitem);
         } catch (err) {
             global.log(err.message);
         }
-        //
-        this._book = '';
-        this._chapter = 0;
-        //
-        this._dailyVerse = new DailyVerse(this);
-        this._bookNavigator = new BookNavigator(this);
-        this._chapterNavigator = new ChapterNavigator(this);
-        this._verseReader = new VerseReader(this);
-        this._search = new Search(this);
-        let layout = new St.BoxLayout({style_class: 'app-panel'});
-        layout.add(this._dailyVerse.button);
-        layout.add(this._bookNavigator.button);
-        layout.add(this._search.button);
-        layout.add(this._verseReader.button);
-        let bin = new St.Bin({x_align: St.Align.MIDDLE});
-        bin.set_child(layout);
-        let menuitem = new PopupMenu.PopupMenuSection();
-        menuitem.addActor(bin);
-        this.menu.addMenuItem(menuitem);
-
-        this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        
-        this._content = new St.Bin({style_class:'content-panel', x_align: St.Align.MIDDLE, y_align: St.Align.MIDDLE});
-        this._content.set_child(this._dailyVerse.actor);
-        menuitem = new PopupMenu.PopupMenuSection();
-        menuitem.addActor(this._content);
-        this.menu.addMenuItem(menuitem);
     },
     setApplication: function(app) {
         this._content.set_child(app.actor);
