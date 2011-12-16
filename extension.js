@@ -525,7 +525,7 @@ DailyVerse.prototype = {
                 this._verse.set_text(text);
                 // update ref label
                 let book_name = stdout.match(/^([\dA-Za-z\s]+)\s+\d+:\d+/);
-                let chapter_name = DAILY_VERSE[timestamp].match(/(\d+):\d+[-\d+]*/);
+                let chapter_name = DAILY_VERSE[timestamp].match(/(\d+):[\d-,\s]*/);
                 if (book_name == null || chapter_name == null) {
                     this._ref.label = '';
                     this._ref._book = '';
@@ -745,7 +745,7 @@ VerseReader.prototype = {
  * 
  * todo:
  * entry focus, the menu closed automatically when focus move out of entry
- * spin, show spin while searching
+ * spin, show spin while searching[affected by async bug]
  * async, search asynchorously
  * version, allow search for any version
  * 
@@ -797,7 +797,7 @@ Search.prototype = {
         layout.add(button, {x_align:St.Align.END,x_fill:false,expand:false});
         this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
         //
-        this._verseContainer = new St.BoxLayout({ vertical: true, style_class:'verse-area' });
+        this._verseContainer = new St.BoxLayout({ vertical: true });
         this._verseButton = [];
         for (let i=0;i<SEARCH_PAGE_SIZE;i++){
             let button = new St.Button({label:''});
@@ -807,7 +807,15 @@ Search.prototype = {
             this._verseButton.push(button);
             this._verseContainer.add(button, {x_align:St.Align.START,y_align:St.Align.START,x_fill:false,y_fill:false,expand:false});
         }
-        this._actor.add(this._verseContainer, {x_fill:true,y_fill:true,expand:true});
+        this._spinner = new Panel.AnimatedIcon('process-working.svg', 24);
+        //
+        this._verseArea = new St.Bin({
+            style_class:'verse-area',
+            x_align:St.Align.START,
+            y_align:St.Align.START
+        });
+        this._verseArea.set_child(this._verseContainer);
+        this._actor.add(this._verseArea, {x_fill:true,y_fill:true,expand:true});
     },
     _onNavButtonClicked: function(sender){
         if (this._verses.length == 0) return true;
@@ -848,10 +856,14 @@ Search.prototype = {
             this._text.text = '';
             return true;
         } else if (symbol == Clutter.Return) {
-            let keyword = this._text.text;
-            this._text.text = '';
-            //this._searchTimeoutId = Mainloop.timeout_add(150, Lang.bind(this, this._doSearch, keyword));
-            if (keyword != '') this._doSearch(keyword);
+            if (this._text.text != '') {
+                let keyword = this._text.text;
+                this._text.text = '';
+                this._verseArea.set_child(this._spinner.actor);
+                this._spinner.actor.show();
+                //this._doSearch(keyword);
+                Mainloop.idle_add(Lang.bind(this, this._doSearch, keyword));
+            }
             return true;
         }
         return false;
@@ -904,6 +916,8 @@ Search.prototype = {
             this._refresh();
             this._verseButton[0].set_label(err.message);
         }
+        this._spinner.actor.hide();
+        this._verseArea.set_child(this._verseContainer);
         return false;// for timeout_add
     }
 };
