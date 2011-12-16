@@ -15,6 +15,9 @@ msgstr "输入关键词 ..."
 msgid "Not found"
 msgstr "未找到"
 
+msgid "No bible text modules found."
+msgstr "没有可用的圣经版本"
+
 msgid "ChiUns"
 msgstr "和合本"
 msgid "ChiNCVs"

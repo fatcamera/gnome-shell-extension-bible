@@ -7,10 +7,13 @@ const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Pango = imports.gi.Pango;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Gettext = imports.gettext;
 const _ = Gettext.gettext;
 const SEARCH_PAGE_SIZE = 23;
+const BIBLE_SETTINGS_SCHEMA = 'org.gnome.shell.extensions.bible';
+const SCHEMA_KEY_ENABLED_VERSIONS = 'enabled-versions';
 let BIBLE_VERSION = [];
 const BIBLE_BOOK = {
     'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
@@ -878,8 +881,7 @@ Search.prototype = {
             let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + current.book + ' ' + current.chapter + ':' + current.verse;
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
-                stdout = stdout.toString();
-                let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
+                let text = stdout.toString().replace(/^[^\d]+\d+:\d+:\s*/g, '')
                     .replace(/\u3000/g, '')
                     .replace(/\n\(.*\)\n$/, '');
                 let button = this._verseButton[i%SEARCH_PAGE_SIZE];
@@ -934,21 +936,18 @@ Indicator.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
     _init: function() {
         PanelMenu.SystemStatusButton.prototype._init.call(this, 'emblem-favorite', null);
-        //
         try{
+            this._settings = new Gio.Settings({ schema: BIBLE_SETTINGS_SCHEMA });
+            let modules = this._settings.get_strv(SCHEMA_KEY_ENABLED_VERSIONS);
             let cmd = 'diatheke -b system -k modulelistnames';
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
-                stdout = stdout.toString();
-                modules = stdout.trim().split('\n');
+                let installed = stdout.toString().trim().split('\n');
                 for (let i=0;i<modules.length;i++) {
-                    let cmd = 'diatheke -b info -k ' + modules[i];
-                    let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-                    if (success && exit_status == 0 && stdout.toString().indexOf('Biblical Texts') != -1){
-                        BIBLE_VERSION.push(modules[i]);
-                    }
+                    if (installed.indexOf(modules[i])!=-1) BIBLE_VERSION.push(modules[i]);
                 }
             }
+            if (BIBLE_VERSION.length == 0) throw new RangeError(_('No bible text modules found.'));
             //
             this._book = '';
             this._chapter = 0;
@@ -977,7 +976,11 @@ Indicator.prototype = {
             menuitem.addActor(this._content);
             this.menu.addMenuItem(menuitem);
         } catch (err) {
-            global.log(err.message);
+            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+            if (err instanceof RangeError) {
+                menuitem = new PopupMenu.PopupMenuItem(err.message);
+                this.menu.addMenuItem(menuitem);
+            }
         }
     },
     setApplication: function(app) {

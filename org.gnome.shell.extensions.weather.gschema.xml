@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-shell-extension-bible">
+  <schema path="/org/gnome/shell/extensions/bible/" id="org.gnome.shell.extensions.bible">
+    <key type="as" name="enabled-versions">
+      <default>[]</default>
+      <summary>Enabled bible versions</summary>
+      <description>Enabled bible versions, the first version is set to default.</description>
+    </key>
+  </schema>
+</schemalist>
