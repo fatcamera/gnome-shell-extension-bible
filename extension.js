@@ -14,6 +14,7 @@ const _ = Gettext.gettext;
 const SEARCH_PAGE_SIZE = 23;
 const BIBLE_SETTINGS_SCHEMA = 'org.gnome.shell.extensions.bible';
 const SCHEMA_KEY_ENABLED_VERSIONS = 'enabled-versions';
+const TERM = '\u0001';
 let BIBLE_VERSION = [];
 const BIBLE_BOOK = {
     'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
@@ -697,11 +698,15 @@ VerseReader.prototype = {
     },
     _onNavButtonClicked: function(sender) {
         if (this._book == '') return true;
-        switch(sender.label){
-            case '\u25c0':this.setReference(BIBLE_BOOK[this._book].prev, 1);break;
-            case '\u25c1':this.setReference(this._book, this._chapter - 1);break;
-            case '\u25b7':this.setReference(this._book, this._chapter + 1);break;
-            case '\u25b6':this.setReference(BIBLE_BOOK[this._book].next, 1);break;
+        try{
+            switch(sender.label){
+                case '\u25c0':this.setReference(BIBLE_BOOK[this._book].prev, 1);break;
+                case '\u25c1':this.setReference(this._book, this._chapter - 1);break;
+                case '\u25b7':this.setReference(this._book, this._chapter + 1);break;
+                case '\u25b6':this.setReference(BIBLE_BOOK[this._book].next, 1);break;
+            }
+        } catch (err) {
+            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
         }
         return true;
     },
@@ -714,46 +719,42 @@ VerseReader.prototype = {
         this._refresh();
         return true;
     },
-    _onRead: function(source, res, str){
+    _onRead: function(source, res){
         try{
-            let [line, length] = source.read_line_finish(res);
-            if (line != null) {
-                source.read_line_async(0, null, Lang.bind(this, this._onRead, str + line + '\n'));
+            let [stdout, length] = source.read_upto_finish(res);
+            source.close(null);
+            let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
+                .replace(/\u3000/g, '')
+                .replace(/^\(.*\)/, '')
+                .replace(/^\n/mg, '');
+            this._verse.set_text(text);
+            // update ref label
+            let result = stdout.match(/^([^\d]+)\s+(\d+)/);
+            if (result == null) {
+                this._ref.set_text('');
+                this._book = '';
+                this._chapter = 0;
             } else {
-                source.close(null);
-                let stdout = str;
-                let text = stdout.replace(/^[^\d]+\d+:(\d+):/mg, '$1')
-                    .replace(/\u3000/g, '')
-                    .replace(/\n\(.*\)\n$/, '');
-                this._verse.set_text(text);
-                // update ref label
-                let result = stdout.match(/^([^\d]+)\s+(\d+)/);
-                if (result == null) {
-                    this._ref.set_text('');
-                    this._book = '';
-                    this._chapter = 0;
-                } else {
-                    this._ref.set_text(_(result[1]) + ' ' + result[2]);
-                    this._book = result[1];
-                    this._chapter = parseInt(result[2]);
-                }
-                // scroll to top
-                this._verseScroller.vscroll.adjustment.set_value(0);
+                this._ref.set_text(_(result[1]) + ' ' + result[2]);
+                this._book = result[1];
+                this._chapter = parseInt(result[2]);
             }
+            // scroll to top
+            this._verseScroller.vscroll.adjustment.set_value(0);
         } catch (err) {
             global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
         }
     },
     _refresh: function() {
-        let cmd = 'diatheke -b ' + this._version + ' -e UTF8 -k ' + this._book + ' ' + this._chapter;
         try{
+            let cmd = 'diatheke -b ' + this._version + ' -e UTF8 -k ' + this._book + ' ' + this._chapter;
             let [success,argv] = GLib.shell_parse_argv(cmd);
             if (!success) throw new Error(cmd);
             let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
             if (!success2) throw new Error(cmd);
             else {
                 let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
-                stream.read_line_async(0, null, Lang.bind(this, this._onRead, ''));
+                stream.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, this._onRead));
             }
         } catch (err) {
             global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
