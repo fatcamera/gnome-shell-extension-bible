@@ -520,29 +520,25 @@ DailyVerse.prototype = {
         let date = new Date();
         let timestamp = (date.getMonth()+1) + '-' + date.getDate();
         let cmd = 'diatheke -b ' + version + ' -k ' + DAILY_VERSE[timestamp];
-        try{
-            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-            if (success && exit_status == 0){
-                stdout = stdout.toString();
-                let text = stdout.replace(/^[^\d]+[\d:\s]+/mg, '')
-                    .replace(/\n\(.*\)\n$/, '')
-                    .replace(/\u3000/g, '').replace(/\n/g, '');
-                this._verse.set_text(text);
-                // update ref label
-                let book_name = stdout.match(/^([\dA-Za-z\s]+)\s+\d+:\d+/);
-                let chapter_name = DAILY_VERSE[timestamp].match(/(\d+):[\d-,\s]*/);
-                if (book_name == null || chapter_name == null) {
-                    this._ref.label = '';
-                    this._ref._book = '';
-                    this._ref._chapter = 0;
-                } else {
-                    this._ref.label = _(book_name[1]) + ' ' + chapter_name[0];
-                    this._ref._book = book_name[1];
-                    this._ref._chapter = parseInt(chapter_name[1]);
-                }
+        let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+        if (success && exit_status == 0){
+            stdout = stdout.toString();
+            let text = stdout.replace(/^[^\d]+[\d:\s]+/mg, '')
+                .replace(/\n\(.*\)\n$/, '')
+                .replace(/\u3000/g, '').replace(/\n/g, '');
+            this._verse.set_text(text);
+            // update ref label
+            let book_name = stdout.match(/^([\dA-Za-z\s]+)\s+\d+:\d+/);
+            let chapter_name = DAILY_VERSE[timestamp].match(/(\d+):[\d-,\s]*/);
+            if (book_name == null || chapter_name == null) {
+                this._ref.label = '';
+                this._ref._book = '';
+                this._ref._chapter = 0;
+            } else {
+                this._ref.label = _(book_name[1]) + ' ' + chapter_name[0];
+                this._ref._book = book_name[1];
+                this._ref._chapter = parseInt(chapter_name[1]);
             }
-        } catch (err) {
-            this._verse.set_text(err.message);
         }
     }
 };
@@ -698,15 +694,11 @@ VerseReader.prototype = {
     },
     _onNavButtonClicked: function(sender) {
         if (this._book == '') return true;
-        try{
-            switch(sender.label){
-                case '\u25c0':this.setReference(BIBLE_BOOK[this._book].prev, 1);break;
-                case '\u25c1':this.setReference(this._book, this._chapter - 1);break;
-                case '\u25b7':this.setReference(this._book, this._chapter + 1);break;
-                case '\u25b6':this.setReference(BIBLE_BOOK[this._book].next, 1);break;
-            }
-        } catch (err) {
-            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+        switch(sender.label){
+            case '\u25c0':this.setReference(BIBLE_BOOK[this._book].prev, 1);break;
+            case '\u25c1':this.setReference(this._book, this._chapter - 1);break;
+            case '\u25b7':this.setReference(this._book, this._chapter + 1);break;
+            case '\u25b6':this.setReference(BIBLE_BOOK[this._book].next, 1);break;
         }
         return true;
     },
@@ -720,36 +712,31 @@ VerseReader.prototype = {
         return true;
     },
     _onRead: function(source, res){
-        try{
-            let [stdout, length] = source.read_upto_finish(res);
-            source.close(null);
-            let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
-                .replace(/\u3000/g, '')
-                .replace(/^\(.*\)/, '')
-                .replace(/^\n/mg, '');
-            this._verse.set_text(text);
-            // update ref label
-            let result = stdout.match(/^([^\d]+)\s+(\d+)/);
-            if (result == null) {
-                this._ref.set_text('');
-                this._book = '';
-                this._chapter = 0;
-            } else {
-                this._ref.set_text(_(result[1]) + ' ' + result[2]);
-                this._book = result[1];
-                this._chapter = parseInt(result[2]);
-            }
-            // scroll to top
-            this._verseScroller.vscroll.adjustment.set_value(0);
-        } catch (err) {
-            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+        let [stdout, length] = source.read_upto_finish(res);
+        source.close(null);
+        let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
+            .replace(/\u3000/g, '')
+            .replace(/^\(.*\)/, '')
+            .replace(/^\n/mg, '');
+        this._verse.set_text(text);
+        // update ref label
+        let result = stdout.match(/^([^\d]+)\s+(\d+)/);
+        if (result == null) {
+            this._ref.set_text('');
+            this._book = '';
+            this._chapter = 0;
+        } else {
+            this._ref.set_text(_(result[1]) + ' ' + result[2]);
+            this._book = result[1];
+            this._chapter = parseInt(result[2]);
         }
+        // scroll to top
+        this._verseScroller.vscroll.adjustment.set_value(0);
     },
     _refresh: function() {
         try{
-            let cmd = 'diatheke -b ' + this._version + ' -e UTF8 -k ' + this._book + ' ' + this._chapter;
+            let cmd = 'diatheke -b ' + this._version + ' -k ' + this._book + ' ' + this._chapter;
             let [success,argv] = GLib.shell_parse_argv(cmd);
-            if (!success) throw new Error(cmd);
             let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
             if (!success2) throw new Error(cmd);
             else {
@@ -897,7 +884,6 @@ Search.prototype = {
         return false;
     },
     _refresh: function(){
-        this._showSpinner();
         this._resetVerseButton();
         for (let i=SEARCH_PAGE_SIZE*this._page;
             i<Math.min(this._verses.length, SEARCH_PAGE_SIZE*(this._page+1));i++){
@@ -917,20 +903,17 @@ Search.prototype = {
         this._hideSpinner();
     },
     _onRead: function(source, res){
-        let [str, length] = source.read_line_finish(res);
-        stdout = str.toString();
+        let [stdout, length] = source.read_line_finish(res);
+        source.close(null);
+        stdout = stdout.toString();// must have
         let start = stdout.indexOf('--');
         let end = stdout.lastIndexOf('--');
         if (start == end) {
-            this._verses = [];
-            this._page = 0;
             this._refresh();
             this._verseButton[0].set_label(_('Not found'));
         } else {
             stdout = stdout.substring(start+2,end);
             let seg = stdout.split(';');
-            this._verses = [];
-            this._page = 0;
             for (let i=0;i<seg.length;i++){
                 let result = seg[i].trim().match(/([^\d]+)\s*(\d+):(\d+)/);
                 this._verses.push({book:result[1].trim(),chapter:parseInt(result[2]),verse:parseInt(result[3])});
@@ -939,22 +922,19 @@ Search.prototype = {
         }
     },
     _doSearch: function(keyword){
+        this._verses = [];
+        this._page = 0;
+        this._resetVerseButton();
         let cmd = 'diatheke -b ChiUns -s phrase -k ' + keyword;
-        try{
-            let [success,argv] = GLib.shell_parse_argv(cmd);
-            if (!success) throw new Error(cmd);
-            //
-            let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
-            if (success2){
-                let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout}));
-                this._showSpinner();
-                stream.read_line_async(0, null, Lang.bind(this, this._onRead));
-            } else throw new Error(cmd);
-        } catch (err) {
-            this._verses = [];
-            this._page = 0;
-            this._refresh();
-            this._verseButton[0].set_label(err.message);
+        let [success,argv] = GLib.shell_parse_argv(cmd);
+        let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
+        if (success2){
+            this._showSpinner();
+            let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
+            stream.read_line_async(0, null, Lang.bind(this, this._onRead));
+            global.log('search:' + cmd);
+        } else {
+            throw new Error(cmd);
         }
     }
 };
