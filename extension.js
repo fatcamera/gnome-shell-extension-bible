@@ -523,7 +523,7 @@ DailyVerse.prototype = {
             let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
             if (success && exit_status == 0){
                 stdout = stdout.toString();
-                let text = stdout.replace(/^.*:\s+/mg, '')
+                let text = stdout.replace(/^[^\d]+[\d:\s]+/mg, '')
                     .replace(/\n\(.*\)\n$/, '')
                     .replace(/\u3000/g, '').replace(/\n/g, '');
                 this._verse.set_text(text);
@@ -714,12 +714,14 @@ VerseReader.prototype = {
         this._refresh();
         return true;
     },
-    _refresh: function() {
-        let cmd = 'diatheke -b ' + this._version + ' -k ' + this._book + ' ' + this._chapter;
+    _onRead: function(source, res, str){
         try{
-            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-            if (success && exit_status == 0){
-                stdout = stdout.toString();
+            let [line, length] = source.read_line_finish(res);
+            if (line != null) {
+                source.read_line_async(0, null, Lang.bind(this, this._onRead, str + line + '\n'));
+            } else {
+                source.close(null);
+                let stdout = str;
                 let text = stdout.replace(/^[^\d]+\d+:(\d+):/mg, '$1')
                     .replace(/\u3000/g, '')
                     .replace(/\n\(.*\)\n$/, '');
@@ -739,9 +741,24 @@ VerseReader.prototype = {
                 this._verseScroller.vscroll.adjustment.set_value(0);
             }
         } catch (err) {
+            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+        }
+    },
+    _refresh: function() {
+        let cmd = 'diatheke -b ' + this._version + ' -e UTF8 -k ' + this._book + ' ' + this._chapter;
+        try{
+            let [success,argv] = GLib.shell_parse_argv(cmd);
+            if (!success) throw new Error(cmd);
+            let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
+            if (!success2) throw new Error(cmd);
+            else {
+                let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
+                stream.read_line_async(0, null, Lang.bind(this, this._onRead, ''));
+            }
+        } catch (err) {
+            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
             this._book = '';
             this._chapter = 0;
-            this._verse.set_text(err.message);
         }
     }
 };
@@ -750,8 +767,6 @@ VerseReader.prototype = {
  * 
  * todo:
  * entry focus, the menu closed automatically when focus move out of entry
- * spin, show spin while searching[affected by async bug]
- * async, search asynchorously
  * version, allow search for any version
  * 
  */
@@ -817,7 +832,9 @@ Search.prototype = {
         this._verseArea = new St.Bin({
             style_class:'verse-area',
             x_align:St.Align.START,
-            y_align:St.Align.START
+            y_align:St.Align.START,
+            x_fill:true,
+            y_fill:true
         });
         this._verseArea.set_child(this._verseContainer);
         this._actor.add(this._verseArea, {x_fill:true,y_fill:true,expand:true});
@@ -855,6 +872,14 @@ Search.prototype = {
             this._verseButton[i]._chapter = 0;
         }
     },
+    _showSpinner: function() {
+        this._verseArea.set_child(this._spinner.actor);
+        this._spinner.actor.show();
+    },
+    _hideSpinner: function(){
+        this._spinner.actor.hide();
+        this._verseArea.set_child(this._verseContainer);
+    },
     _onKeyPress: function(entry, event) {
         let symbol = event.get_key_symbol();
         if (symbol == Clutter.Escape) {
@@ -864,16 +889,14 @@ Search.prototype = {
             if (this._text.text != '') {
                 let keyword = this._text.text;
                 this._text.text = '';
-                this._verseArea.set_child(this._spinner.actor);
-                this._spinner.actor.show();
-                //this._doSearch(keyword);
-                Mainloop.idle_add(Lang.bind(this, this._doSearch, keyword));
+                this._doSearch(keyword);
             }
             return true;
         }
         return false;
     },
     _refresh: function(){
+        this._showSpinner();
         this._resetVerseButton();
         for (let i=SEARCH_PAGE_SIZE*this._page;
             i<Math.min(this._verses.length, SEARCH_PAGE_SIZE*(this._page+1));i++){
@@ -890,41 +913,48 @@ Search.prototype = {
                 button._chapter = current.chapter;
             }
         }
+        this._hideSpinner();
+    },
+    _onRead: function(source, res){
+        let [str, length] = source.read_line_finish(res);
+        stdout = str.toString();
+        let start = stdout.indexOf('--');
+        let end = stdout.lastIndexOf('--');
+        if (start == end) {
+            this._verses = [];
+            this._page = 0;
+            this._refresh();
+            this._verseButton[0].set_label(_('Not found'));
+        } else {
+            stdout = stdout.substring(start+2,end);
+            let seg = stdout.split(';');
+            this._verses = [];
+            this._page = 0;
+            for (let i=0;i<seg.length;i++){
+                let result = seg[i].trim().match(/([^\d]+)\s*(\d+):(\d+)/);
+                this._verses.push({book:result[1].trim(),chapter:parseInt(result[2]),verse:parseInt(result[3])});
+            }
+            this._refresh();
+        }
     },
     _doSearch: function(keyword){
         let cmd = 'diatheke -b ChiUns -s phrase -k ' + keyword;
         try{
-            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-            if (success && exit_status == 0){
-                stdout = stdout.toString();
-                let start = stdout.indexOf('--');
-                let end = stdout.lastIndexOf('--');
-                if (start == end) {
-                    this._verses = [];
-                    this._page = 0;
-                    this._refresh();
-                    this._verseButton[0].set_label(_('Not found'));
-                } else {
-                    stdout = stdout.substring(start+2,end);
-                    let seg = stdout.split(';');
-                    this._verses = [];
-                    this._page = 0;
-                    for (let i=0;i<seg.length;i++){
-                        let result = seg[i].trim().match(/([^\d]+)\s*(\d+):(\d+)/);
-                        this._verses.push({book:result[1].trim(),chapter:parseInt(result[2]),verse:parseInt(result[3])});
-                    }
-                    this._refresh();
-                }
-            }
+            let [success,argv] = GLib.shell_parse_argv(cmd);
+            if (!success) throw new Error(cmd);
+            //
+            let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
+            if (success2){
+                let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout}));
+                this._showSpinner();
+                stream.read_line_async(0, null, Lang.bind(this, this._onRead));
+            } else throw new Error(cmd);
         } catch (err) {
             this._verses = [];
             this._page = 0;
             this._refresh();
             this._verseButton[0].set_label(err.message);
         }
-        this._spinner.actor.hide();
-        this._verseArea.set_child(this._verseContainer);
-        return false;// for timeout_add
     }
 };
 /**
