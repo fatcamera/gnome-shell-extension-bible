@@ -673,7 +673,6 @@ VerseReader.prototype = {
         this._verseScroller = new St.ScrollView({style_class: 'verse-scroller'});
         this._verseScroller.add_actor(layout);
         this._verseScroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC);
-        // TODO scroll by drag
         this._actor.add(this._verseScroller, {x_fill:true,y_fill:true,y_align: St.Align.START,expand:true});
         // control area
         let layout = new St.BoxLayout({style_class:'control-area'});
@@ -714,9 +713,10 @@ VerseReader.prototype = {
     _onRead: function(source, res){
         let [stdout, length] = source.read_upto_finish(res);
         source.close(null);
+        stdout = stdout.toString();
         let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
             .replace(/\u3000/g, '')
-            .replace(/^\(.*\)/, '')
+            .replace(/^\(.*\)/mg, '')
             .replace(/^\n/mg, '');
         this._verse.set_text(text);
         // update ref label
@@ -883,21 +883,33 @@ Search.prototype = {
         }
         return false;
     },
+    _onReadVerse: function(source, res, i){
+        let [stdout, length] = source.read_upto_finish(res);
+        source.close(null);
+        stdout = stdout.toString();
+        let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
+            .replace(/\u3000/g, '')
+            .replace(/^\(.*\)/mg, '')
+            .replace(/\n/g, '');
+        let button = this._verseButton[i%SEARCH_PAGE_SIZE];
+        let current = this._verses[i];
+        button.set_label(_(current.book) + ' ' + current.chapter + ':'+current.verse+' '+text);
+        button._book = current.book;
+        button._chapter = current.chapter;
+    },
     _refresh: function(){
         this._resetVerseButton();
         for (let i=SEARCH_PAGE_SIZE*this._page;
             i<Math.min(this._verses.length, SEARCH_PAGE_SIZE*(this._page+1));i++){
             let current = this._verses[i];
             let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + current.book + ' ' + current.chapter + ':' + current.verse;
-            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-            if (success && exit_status == 0){
-                let text = stdout.toString().replace(/^[^\d]+\d+:\d+:\s*/g, '')
-                    .replace(/\u3000/g, '')
-                    .replace(/\n\(.*\)\n$/, '');
-                let button = this._verseButton[i%SEARCH_PAGE_SIZE];
-                button.set_label(_(current.book) + ' ' + current.chapter + ':'+current.verse+' '+text);
-                button._book = current.book;
-                button._chapter = current.chapter;
+            let [success,argv] = GLib.shell_parse_argv(cmd);
+            let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
+            if (success2){
+                let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
+                stream.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, this._onReadVerse, i));
+            } else {
+                throw new Error(cmd);
             }
         }
         this._hideSpinner();
@@ -932,7 +944,6 @@ Search.prototype = {
             this._showSpinner();
             let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
             stream.read_line_async(0, null, Lang.bind(this, this._onRead));
-            global.log('search:' + cmd);
         } else {
             throw new Error(cmd);
         }
