@@ -473,7 +473,11 @@ function readCmdOutputAsync(cmd, callback){
         let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
         if (!success2) throw new Error(cmd);
         else {
-            let source = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
+            let source = new Gio.UnixInputStream({fd:stderr,close_fd:true});
+            source.close(null);
+            source = new Gio.UnixOutputStream({fd:stdin,close_fd:true});
+            source.close(null);
+            source = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
             source.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, onReadUptoAsync, callback));
         }
     } catch (err) {
