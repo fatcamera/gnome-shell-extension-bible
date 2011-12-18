@@ -452,6 +452,35 @@ const DAILY_VERSE = {
     '12-30' : 'John 16:33',
     '12-31' : 'Isaiah 43:16, 18-19'
 };
+function onReadUptoAsync(source, res, callback){
+    try{
+        let [stdout, length] = source.read_upto_finish(res);
+        source.close(null);
+        if (stdout == null) throw new Error('no data');
+        callback(stdout.toString());
+    } catch(err) {
+        global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+        callback(null);
+    }
+}
+/**
+ * Read command line output asynchorous.
+ */
+function readCmdOutputAsync(cmd, callback){
+    try{
+        let [success,argv] = GLib.shell_parse_argv(cmd);
+        if (!success) throw new Error(cmd);
+        let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
+        if (!success2) throw new Error(cmd);
+        else {
+            let source = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
+            source.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, onReadUptoAsync, callback));
+        }
+    } catch (err) {
+        global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+        callback(null);
+    }
+}
 /**
  * BibleApplicaton:
  * 
@@ -710,44 +739,34 @@ VerseReader.prototype = {
         this._refresh();
         return true;
     },
-    _onRead: function(source, res){
-        let [stdout, length] = source.read_upto_finish(res);
-        source.close(null);
-        stdout = stdout.toString();
-        let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
-            .replace(/\u3000/g, '')
-            .replace(/^\(.*\)/mg, '')
-            .replace(/^\n/mg, '');
-        this._verse.set_text(text);
-        // update ref label
-        let result = stdout.match(/^([^\d]+)\s+(\d+)/);
-        if (result == null) {
-            this._ref.set_text('');
+    _onRead: function(stdout){
+        if (stdout == null) {
             this._book = '';
             this._chapter = 0;
         } else {
-            this._ref.set_text(_(result[1]) + ' ' + result[2]);
-            this._book = result[1];
-            this._chapter = parseInt(result[2]);
+            let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
+                .replace(/\u3000/g, '')
+                .replace(/^\(.*\)/mg, '')
+                .replace(/^\n/mg, '');
+            this._verse.set_text(text);
+            // update ref label
+            let result = stdout.match(/^([^\d]+)\s+(\d+)/);
+            if (result == null) {
+                this._ref.set_text('');
+                this._book = '';
+                this._chapter = 0;
+            } else {
+                this._ref.set_text(_(result[1]) + ' ' + result[2]);
+                this._book = result[1];
+                this._chapter = parseInt(result[2]);
+            }
+            // scroll to top
+            this._verseScroller.vscroll.adjustment.set_value(0);
         }
-        // scroll to top
-        this._verseScroller.vscroll.adjustment.set_value(0);
     },
     _refresh: function() {
-        try{
-            let cmd = 'diatheke -b ' + this._version + ' -k ' + this._book + ' ' + this._chapter;
-            let [success,argv] = GLib.shell_parse_argv(cmd);
-            let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
-            if (!success2) throw new Error(cmd);
-            else {
-                let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
-                stream.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, this._onRead));
-            }
-        } catch (err) {
-            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
-            this._book = '';
-            this._chapter = 0;
-        }
+        let cmd = 'diatheke -b ' + this._version + ' -k ' + this._book + ' ' + this._chapter;
+        readCmdOutputAsync(cmd, Lang.bind(this, this._onRead));
     }
 };
 /**
@@ -1025,7 +1044,9 @@ Indicator.prototype = {
         this.setApplication(this._verseReader);
     }
 };
-
+/**
+ * todo: separate async read module
+ */
 function main(metadata) {
     Gettext.bindtextdomain("gnome-shell-extension-bible", metadata.path + '/locale');
     Gettext.textdomain("gnome-shell-extension-bible");
