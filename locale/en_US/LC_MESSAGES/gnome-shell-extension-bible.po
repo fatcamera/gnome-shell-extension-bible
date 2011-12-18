@@ -12,8 +12,11 @@ msgstr ""
 msgid "Type to search ..."
 msgstr "输入关键词 ..."
 
-msgid "Not found"
-msgstr "未找到"
+msgid "Search \"%s\" : %d results, %d/%d"
+msgstr "搜索 “%s” ： %d 个结果， %d/%d"
+
+msgid "Search \"%s\" : ..."
+msgstr "搜索 “%s” ： ……"
 
 msgid "No bible text modules found."
 msgstr "没有可用的圣经版本"

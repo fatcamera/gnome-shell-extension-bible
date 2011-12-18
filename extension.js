@@ -11,7 +11,7 @@ const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const Gettext = imports.gettext;
 const _ = Gettext.gettext;
-const SEARCH_PAGE_SIZE = 23;
+const SEARCH_PAGE_SIZE = 20;
 const BIBLE_SETTINGS_SCHEMA = 'org.gnome.shell.extensions.bible';
 const SCHEMA_KEY_ENABLED_VERSIONS = 'enabled-versions';
 const TERM = '\u0001';
@@ -743,6 +743,8 @@ VerseReader.prototype = {
         if (stdout == null) {
             this._book = '';
             this._chapter = 0;
+            this._ref.set_text('');
+            this._verse.set_text('');
         } else {
             let text = stdout.replace(/^[^\d\n]+\d+:(\d+):/mg, '$1')
                 .replace(/\u3000/g, '')
@@ -785,13 +787,11 @@ Search.prototype = {
         this._actor = new St.BoxLayout({vertical:true,style_class:'search'});
         this._verses = [];
         this._page = 0;
-        //
+        // nav area
         let layout = new St.BoxLayout({style_class:'nav-area'});
         let button = new St.Button({ label:'\u25c0'});
         button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
         layout.add(button, {x_align:St.Align.START,x_fill:false,expand:false});
-        //
-        this._active = false;
         this._entry = new St.Entry({
             style_class:'search-entry',
             text:'',
@@ -799,6 +799,7 @@ Search.prototype = {
             track_hover: true,
             can_focus: true
         });
+        this._keyword = '';
         this._text = this._entry.clutter_text;
         this._text.connect('key-press-event', Lang.bind(this, this._onKeyPress));
         this._inactiveIcon = new St.Icon({
@@ -818,12 +819,14 @@ Search.prototype = {
             global.stage.set_key_focus(this._text);
         }));
         layout.add(this._entry,{x_align:St.Align.MIDDLE,x_fill:true,expand:true});
-        //
         button = new St.Button({ label:'\u25b6'});
         button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
         layout.add(button, {x_align:St.Align.END,x_fill:false,expand:false});
         this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
-        //
+        // label
+        this._resultLabel = new St.Label({text:'', style_class:'res-label'});
+        this._actor.add(this._resultLabel, {x_align:St.Align.MIDDLE,x_fill:false});
+        // result area
         this._verseContainer = new St.BoxLayout({ vertical: true });
         this._verseButton = [];
         for (let i=0;i<SEARCH_PAGE_SIZE;i++){
@@ -894,78 +897,66 @@ Search.prototype = {
             return true;
         } else if (symbol == Clutter.Return) {
             if (this._text.text != '') {
-                let keyword = this._text.text;
+                this._keyword = this._text.text;
                 this._text.text = '';
-                this._doSearch(keyword);
+                this._doSearch();
             }
             return true;
         }
         return false;
     },
-    _onReadVerse: function(source, res, i){
-        let [stdout, length] = source.read_upto_finish(res);
-        source.close(null);
-        stdout = stdout.toString();
-        let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
-            .replace(/\u3000/g, '')
-            .replace(/^\(.*\)/mg, '')
-            .replace(/\n/g, '');
-        let button = this._verseButton[i%SEARCH_PAGE_SIZE];
-        let current = this._verses[i];
-        button.set_label(_(current.book) + ' ' + current.chapter + ':'+current.verse+' '+text);
-        button._book = current.book;
-        button._chapter = current.chapter;
+    _onReadVerse: function(stdout, i){
+        if (stdout != null){
+            let text = stdout.replace(/^[^\d]+\d+:\d+:\s*/g, '')
+                .replace(/\u3000/g, '')
+                .replace(/^\(.*\)/mg, '')
+                .replace(/\n/g, '');
+            let button = this._verseButton[i%SEARCH_PAGE_SIZE];
+            let current = this._verses[i];
+            button.set_label(_(current.book) + ' ' + current.chapter + ':'+current.verse+' '+text);
+            button._book = current.book;
+            button._chapter = current.chapter;
+        }
     },
     _refresh: function(){
+        this._resultLabel.set_text(_('Search "%s" : %d results, %d/%d').format(
+            this._keyword, this._verses.length,
+            this._verses.length == 0 ? 0 : this._page + 1,
+            Math.ceil(this._verses.length/SEARCH_PAGE_SIZE)));
         this._resetVerseButton();
         for (let i=SEARCH_PAGE_SIZE*this._page;
             i<Math.min(this._verses.length, SEARCH_PAGE_SIZE*(this._page+1));i++){
             let current = this._verses[i];
             let cmd = 'diatheke -b ' + 'ChiUns' + ' -k ' + current.book + ' ' + current.chapter + ':' + current.verse;
-            let [success,argv] = GLib.shell_parse_argv(cmd);
-            let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
-            if (success2){
-                let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
-                stream.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, this._onReadVerse, i));
-            } else {
-                throw new Error(cmd);
-            }
+            readCmdOutputAsync(cmd, Lang.bind(this, this._onReadVerse, i));
         }
         this._hideSpinner();
     },
-    _onRead: function(source, res){
-        let [stdout, length] = source.read_line_finish(res);
-        source.close(null);
-        stdout = stdout.toString();// must have
-        let start = stdout.indexOf('--');
-        let end = stdout.lastIndexOf('--');
-        if (start == end) {
-            this._refresh();
-            this._verseButton[0].set_label(_('Not found'));
-        } else {
-            stdout = stdout.substring(start+2,end);
-            let seg = stdout.split(';');
-            for (let i=0;i<seg.length;i++){
-                let result = seg[i].trim().match(/([^\d]+)\s*(\d+):(\d+)/);
-                this._verses.push({book:result[1].trim(),chapter:parseInt(result[2]),verse:parseInt(result[3])});
+    _onRead: function(stdout){
+        if (stdout != null){
+            let start = stdout.indexOf('--');
+            let end = stdout.lastIndexOf('--');
+            if (start == end) {
+                this._refresh();
+            } else {
+                stdout = stdout.substring(start+2,end);
+                let seg = stdout.split(';');
+                for (let i=0;i<seg.length;i++){
+                    let result = seg[i].trim().match(/([^\d]+)\s*(\d+):(\d+)/);
+                    this._verses.push({book:result[1].trim(),chapter:parseInt(result[2]),verse:parseInt(result[3])});
+                }
+                this._refresh();
             }
-            this._refresh();
         }
     },
-    _doSearch: function(keyword){
+    _doSearch: function(){
         this._verses = [];
         this._page = 0;
         this._resetVerseButton();
-        let cmd = 'diatheke -b ChiUns -s phrase -k ' + keyword;
-        let [success,argv] = GLib.shell_parse_argv(cmd);
-        let [success2,pid,stdin,stdout,stderr] = GLib.spawn_async_with_pipes(null,argv,null,GLib.SpawnFlags.SEARCH_PATH,null);
-        if (success2){
-            this._showSpinner();
-            let stream = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
-            stream.read_line_async(0, null, Lang.bind(this, this._onRead));
-        } else {
-            throw new Error(cmd);
-        }
+        let cmd = 'diatheke -b ChiUns -s phrase -k ' + this._keyword;
+        this._resultLabel.set_text(_('Search "%s" : ...').format(this._keyword));
+        this._showSpinner();
+        readCmdOutputAsync(cmd, Lang.bind(this, this._onRead));
     }
 };
 /**
@@ -1044,9 +1035,6 @@ Indicator.prototype = {
         this.setApplication(this._verseReader);
     }
 };
-/**
- * todo: separate async read module
- */
 function main(metadata) {
     Gettext.bindtextdomain("gnome-shell-extension-bible", metadata.path + '/locale');
     Gettext.textdomain("gnome-shell-extension-bible");
