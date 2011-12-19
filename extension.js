@@ -478,7 +478,7 @@ function readCmdOutputAsync(cmd, callback){
             source = new Gio.UnixOutputStream({fd:stdin,close_fd:true});
             source.close(null);
             source = Gio.DataInputStream.new(new Gio.UnixInputStream({fd:stdout, close_fd:true}));
-            source.read_upto_async(TERM, TERM.length, 0, null, Lang.bind(this, onReadUptoAsync, callback));
+            source.read_upto_async(TERM, TERM.length, GLib.PRIORITY_DEFAULT, null, Lang.bind(this, onReadUptoAsync, callback));
         }
     } catch (err) {
         global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
@@ -874,6 +874,7 @@ Search.prototype = {
                 }
                 break;
         }
+        return true;
     },
     _onVerseButtonClicked: function(sender){
         if (sender._book != '' && sender._chapter != 0)
