@@ -2,18 +2,19 @@
 .app-panel StButton{font-size:1.8em;color:gray;}
 .app-panel StButton:hover{color:white;}
 .content-panel{width:500px;height:500px;}
+/* version-area */
+.version-area{spacing:10px;}
+.version-area StButton{
+border:2px solid rgba(0,0,0,0.0);border-radius:5px;
+padding:5px;color:gray;
+}
+.version-area StButton.current{color:white;}
+.version-area StButton:hover{border-color:gray;color:white;}
 /* daily verse */
 .daily-verse{width:400px;height:400px;padding:25px;border:1px solid gray;border-radius:5px;}
 .daily-verse .verse-label{padding-bottom:10px;font-size:1.2em;}
 .daily-verse .ref-button{font-size:0.9em;font-style:italic;color:gray;}
 .daily-verse .ref-button:hover{color:white;}
-.daily-verse .control-area{spacing:10px;}
-.daily-verse .control-area .version-button{
-border:2px solid rgba(0,0,0,0.0);border-radius:5px;
-padding:5px;color:gray;
-}
-.daily-verse .control-area .version-button.current{color:white;}
-.daily-verse .control-area .version-button:hover{border-color:gray;color:white;}
 /* book navigator */
 .book-navigator{spacing-rows:0px;spacing-columns:0px;}
 .book-navigator StButton{width:50px;height:50px;border:1px solid gray;border-radius:5px;}
@@ -36,13 +37,6 @@ border:1px solid gray;border-radius:5px;
 .verse-reader .nav-area StButton{color:gray;}
 .verse-reader .nav-area StButton:hover{color:white;}
 .verse-reader .nav-area .ref-label{font-weight:bold;}
-.verse-reader .control-area{spacing:10px;}
-.verse-reader .control-area .version-button{
-border:2px solid rgba(0,0,0,0.0);border-radius:5px;
-padding:5px;color:gray;
-}
-.verse-reader .control-area .version-button.current{color:white;}
-.verse-reader .control-area .version-button:hover{border-color:gray;color:white;}
 /* search */
 .search{spacing:10px;width:450px;height:480px;}
 .search .nav-area{spacing:10px;}
