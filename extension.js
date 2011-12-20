@@ -85,24 +85,24 @@ const BIBLE_BOOK = {
     'Revelation of John': {abbr:'re',chapter:22,old:false,next:'Genesis',prev:'Jude'}
 };
 const DAILY_VERSE = {
-    '1-1' : '2 Corinthians 5:17',
+    '1-1' : 'II Corinthians 5:17',
     '1-2' : 'Psalm 90:12',
     '1-3' : 'Titus 2:11-12',
     '1-4' : 'Micah 6:8',
     '1-5' : 'Isaiah 1:16-17',
-    '1-6' : '1 Peter 1:13',
+    '1-6' : 'I Peter 1:13',
     '1-7' : 'Ephesians 5:1-2',
     '1-8' : 'Amos 5:14-15',
     '1-9' : 'Matthew 6:19-21',
-    '1-10' : '1 Peter 1:15-16',
+    '1-10' : 'I Peter 1:15-16',
     '1-11' : 'Psalm 118:5-6',
     '1-12' : 'Galatians 3:26-28',
-    '1-13' : '2 Corinthians 5:19-20',
-    '1-14' : '1 John 4:20-21',
+    '1-13' : 'II Corinthians 5:19-20',
+    '1-14' : 'I John 4:20-21',
     '1-15' : 'John 8:31-32',
     '1-16' : 'Galatians 5:16',
     '1-17' : 'Philippians 2:14-16',
-    '1-18' : '1 Corinthians 10:13',
+    '1-18' : 'I Corinthians 10:13',
     '1-19' : 'Matthew 7:12',
     '1-20' : 'James 1:2-3',
     '1-21' : 'Galatians 6:7-8',
@@ -117,33 +117,33 @@ const DAILY_VERSE = {
     '1-30' : 'Ephesians 4:2',
     '1-31' : 'Psalm 86:5',
     '2-1' : 'Deuteronomy 6:4-5',
-    '2-2' : '1 Corinthians 2:9',
+    '2-2' : 'I Corinthians 2:9',
     '2-3' : 'Psalm 59:16',
     '2-4' : 'Psalm 18:1-2',
     '2-5' : 'Psalm 33:4-5',
     '2-6' : 'Proverbs 21:21',
     '2-7' : 'Psalm 97:10',
     '2-8' : 'Matthew 5:43-45',
-    '2-9' : '2 Thessalonians 1:3',
-    '2-10' : '1 Corinthians 13:1-3',
-    '2-11' : '1 Corinthians 13:4-5',
-    '2-12' : '1 Corinthians 13: 6-7',
+    '2-9' : 'II Thessalonians 1:3',
+    '2-10' : 'I Corinthians 13:1-3',
+    '2-11' : 'I Corinthians 13:4-5',
+    '2-12' : 'I Corinthians 13: 6-7',
     '2-13' : 'John 3:16',
     '2-14' : 'John 13:34-35',
-    '2-15' : '1 John 4:10',
-    '2-16' : '1 John 3:11',
+    '2-15' : 'I John 4:10',
+    '2-16' : 'I John 3:11',
     '2-17' : 'Romans 8:35,37',
     '2-18' : 'Romans 8:38-39',
-    '2-19' : '1 John 4:11-12',
+    '2-19' : 'I John 4:11-12',
     '2-20' : 'Proverbs 17:9',
     '2-21' : 'Romans 13:9-10',
-    '2-22' : '1 John 4:18',
+    '2-22' : 'I John 4:18',
     '2-23' : 'Proverbs 14:22',
     '2-24' : 'Jeremiah 29:11-13',
     '2-25' : 'Matthew 22:37-39',
-    '2-26' : '1 John 4:9',
-    '2-27' : '1 John 3:18',
-    '2-28' : '2 Timothy 1:7',
+    '2-26' : 'I John 4:9',
+    '2-27' : 'I John 3:18',
+    '2-28' : 'II Timothy 1:7',
     '2-29' : 'Psalm 73:25-26',
     '3-1' : 'Psalm 73:25-26',
     '3-2' : 'Job 23:10-11',
@@ -152,54 +152,54 @@ const DAILY_VERSE = {
     '3-5' : 'Deuteronomy 6: 6-7',
     '3-6' : 'Isaiah 25:1',
     '3-7' : 'Psalm 139:23-24',
-    '3-8' : '2 Corinthians 1:3-4',
-    '3-9' : '2 Timothy 1:9',
-    '3-10' : '1 Peter 3:15',
+    '3-8' : 'II Corinthians 1:3-4',
+    '3-9' : 'II Timothy 1:9',
+    '3-10' : 'I Peter 3:15',
     '3-11' : 'Deuteronomy 7:9',
-    '3-12' : '2 Peter 1:4',
+    '3-12' : 'II Peter 1:4',
     '3-13' : 'Romans 8:28',
-    '3-14' : '2 Peter 1:5-8',
+    '3-14' : 'II Peter 1:5-8',
     '3-15' : 'Acts 4:10,12',
     '3-16' : 'Colossians 3:12',
     '3-17' : 'Psalm 23:1-3',
     '3-18' : 'Romans 15:13',
     '3-19' : 'Galatians 5:22-23',
-    '3-20' : '1 Peter 2:2-3',
+    '3-20' : 'I Peter 2:2-3',
     '3-21' : 'Jeremiah 17:7-8',
     '3-22' : 'Ephesians 6:10-11',
     '3-23' : 'James 1:12',
     '3-24' : 'Romans 6:23',
-    '3-25' : '1 John 1:9',
+    '3-25' : 'I John 1:9',
     '3-26' : 'Philippians 1:29',
     '3-27' : 'Psalm 62:7',
-    '3-28' : '1 Timothy 2:5-6',
-    '3-29' : '2 Corinthians 5:21',
+    '3-28' : 'I Timothy 2:5-6',
+    '3-29' : 'II Corinthians 5:21',
     '3-30' : 'Isaiah 53:3-4',
     '3-31' : 'Isaiah 53:5-6',
     '4-1' : 'Psalm 14:1',
     '4-2' : 'Matthew 20: 17-19',
     '4-3' : 'Hebrews 12:2',
     '4-4' : 'Ephesians 1:7',
-    '4-5' : '2 Corinthians 5:14-15',
-    '4-6' : '1 John 3:16',
+    '4-5' : 'II Corinthians 5:14-15',
+    '4-6' : 'I John 3:16',
     '4-7' : 'Galatians 2:20',
     '4-8' : 'Romans 5:10',
     '4-9' : 'Hebrews 1:3',
     '4-10' : 'Romans 5:6-8',
-    '4-11' : '1 Peter 2:24',
+    '4-11' : 'I Peter 2:24',
     '4-12' : 'Luke 9:23-24',
     '4-13' : 'Romans 3:23-24',
-    '4-14' : '1 Corinthians 15:1, 3-4',
+    '4-14' : 'I Corinthians 15:1, 3-4',
     '4-15' : 'Romans 13:6-7',
     '4-16' : 'Romans 13:8',
-    '4-17' : '1 Corinthians 1:18',
+    '4-17' : 'I Corinthians 1:18',
     '4-18' : 'Romans 10:9-10',
-    '4-19' : '1 Corinthians 15:20-22',
-    '4-20' : '1 Corinthians 15:55-57',
+    '4-19' : 'I Corinthians 15:20-22',
+    '4-20' : 'I Corinthians 15:55-57',
     '4-21' : 'John 10:28-30',
     '4-22' : 'Romans 1:20',
     '4-23' : 'Romans 14:11',
-    '4-24' : '1 Peter 1:18-19',
+    '4-24' : 'I Peter 1:18-19',
     '4-25' : 'Colossians 1:27-28',
     '4-26' : 'Hebrews 7:25',
     '4-27' : 'Luke 19:10',
@@ -207,12 +207,12 @@ const DAILY_VERSE = {
     '4-29' : 'Job 19:25',
     '4-30' : 'Ephesians 4:15',
     '5-1' : 'Hebrews 11:6',
-    '5-2' : '1 John 5:14-15',
+    '5-2' : 'I John 5:14-15',
     '5-3' : 'Romans 12:12',
-    '5-4' : '2 Chronicles 7:14',
+    '5-4' : 'II Chronicles 7:14',
     '5-5' : 'Philippians 4:6-7',
     '5-6' : 'James 5:16',
-    '5-7' : '1 Thessalonians 5:16-18',
+    '5-7' : 'I Thessalonians 5:16-18',
     '5-8' : 'Colossians 4:5-6',
     '5-9' : 'Romans 8:1-2',
     '5-10' : 'Matthew 18:15',
@@ -226,7 +226,7 @@ const DAILY_VERSE = {
     '5-18' : 'Hebrews 6:10',
     '5-19' : 'James 3:17-18',
     '5-20' : 'Romans 15:5-6',
-    '5-21' : '1 Corinthians 1:10',
+    '5-21' : 'I Corinthians 1:10',
     '5-22' : 'Galatians 5:13',
     '5-23' : 'Romans 15:2',
     '5-24' : 'Romans 12:10',
@@ -236,12 +236,12 @@ const DAILY_VERSE = {
     '5-28' : 'Romans 12:15',
     '5-29' : 'Psalm 103:17-18',
     '5-30' : 'Psalm 56:4',
-    '5-31' : '1 Thessalonians 4:16-17',
-    '6-1' : 'Revelation 21: 2-4',
+    '5-31' : 'I Thessalonians 4:16-17',
+    '6-1' : 'Revelation of John 21: 2-4',
     '6-2' : 'Hebrews 9:28',
     '6-3' : 'Proverbs 15:1',
-    '6-4' : '1 Chronicles 29:11',
-    '6-5' : '1 Thessalonians 5:11',
+    '6-4' : 'I Chronicles 29:11',
+    '6-5' : 'I Thessalonians 5:11',
     '6-6' : 'Ephesians 3:17-19',
     '6-7' : 'Psalm 90:2,4',
     '6-8' : 'Habakkuk 3:19',
@@ -260,11 +260,11 @@ const DAILY_VERSE = {
     '6-21' : 'Psalm 91:1',
     '6-22' : 'Psalm 121:7-8',
     '6-23' : 'Isaiah 40:31',
-    '6-24' : '2 Thessalonians 3:3',
+    '6-24' : 'II Thessalonians 3:3',
     '6-25' : 'Jeremiah 23:24',
     '6-26' : 'Leviticus 19:18',
     '6-27' : 'Matthew 16:25',
-    '6-28' : '2 Peter 3:9',
+    '6-28' : 'II Peter 3:9',
     '6-29' : 'Psalm 138:8',
     '6-30' : 'Zechariah 14:9',
     '7-1' : 'Romans 12:3',
@@ -286,7 +286,7 @@ const DAILY_VERSE = {
     '7-17' : 'Romans 1:16',
     '7-18' : 'Psalm 119:7',
     '7-19' : 'Isaiah 41:10',
-    '7-20' : '1 John 1:7',
+    '7-20' : 'I John 1:7',
     '7-21' : 'Psalm 119:30',
     '7-22' : 'Matthew 16:15-16',
     '7-23' : 'Matthew 19:14',
@@ -300,7 +300,7 @@ const DAILY_VERSE = {
     '7-31' : 'John 1:12-13',
     '8-1' : 'Psalm 119:114',
     '8-2' : 'James 1:22',
-    '8-3' : '1 Samuel 16:7',
+    '8-3' : 'I Samuel 16:7',
     '8-4' : 'Jeremiah 33:2-3',
     '8-5' : 'Psalm 119:130',
     '8-6' : 'Psalm 119:160',
@@ -309,14 +309,14 @@ const DAILY_VERSE = {
     '8-9' : 'Luke 12:6-7',
     '8-10' : 'Psalm 46:1',
     '8-11' : 'Psalm 119:14',
-    '8-12' : '1 Corinthians 6:19-20',
+    '8-12' : 'I Corinthians 6:19-20',
     '8-13' : 'Ephesians 2:10',
-    '8-14' : 'Revelation 3:14,20',
+    '8-14' : 'Revelation of John 3:14,20',
     '8-15' : 'Romans 14:8',
-    '8-16' : '2 Corinthians 7:1',
-    '8-17' : '2 Corinthians 10:17-18',
+    '8-16' : 'II Corinthians 7:1',
+    '8-17' : 'II Corinthians 10:17-18',
     '8-18' : 'Philippians 1:21',
-    '8-19' : '1 John 5:12',
+    '8-19' : 'I John 5:12',
     '8-20' : 'Psalm 16:8',
     '8-21' : 'Psalm 42:8',
     '8-22' : 'Romans 8:32',
@@ -332,7 +332,7 @@ const DAILY_VERSE = {
     '9-1' : 'Proverbs 22:6',
     '9-2' : 'Psalm 119:64',
     '9-3' : 'Isaiah 48:17',
-    '9-4' : '2 Timothy 1:13-14',
+    '9-4' : 'II Timothy 1:13-14',
     '9-5' : 'Matthew 28:18-20',
     '9-6' : 'John 14:23',
     '9-7' : 'Colossians 1:28',
@@ -341,27 +341,27 @@ const DAILY_VERSE = {
     '9-10' : 'Isaiah 46:4',
     '9-11' : 'Psalm 121:1-2',
     '9-12' : 'Philippians 4:4',
-    '9-13' : '1 Peter 3:8',
+    '9-13' : 'I Peter 3:8',
     '9-14' : 'Philippians 2:1-2',
-    '9-15' : '1 John 4:16',
+    '9-15' : 'I John 4:16',
     '9-16' : 'James 3:13',
     '9-17' : 'Ephesians 5:1',
     '9-18' : 'Philippians 2:3-4',
     '9-19' : 'Ephesians 4:29',
     '9-20' : 'Joel 2:23',
-    '9-21' : '2 Corinthians 13:14',
+    '9-21' : 'II Corinthians 13:14',
     '9-22' : 'Romans 15:7',
     '9-23' : 'Romans 5:3-4',
     '9-24' : 'Hebrews 10:35-36',
-    '9-25' : '1 John 2:1',
+    '9-25' : 'I John 2:1',
     '9-26' : 'Hebrews 10:30-31',
     '9-27' : 'Matthew 6:33',
-    '9-28' : '1 Corinthians 2:14',
+    '9-28' : 'I Corinthians 2:14',
     '9-29' : 'John 3:20-21',
     '9-30' : 'Philippians 1:9-10',
     '10-1' : 'Matthew 5:11-12',
     '10-2' : 'Proverbs 29:25',
-    '10-3' : '1 Peter 1:3',
+    '10-3' : 'I Peter 1:3',
     '10-4' : 'Proverbs 27:1',
     '10-5' : 'Isaiah 55:6',
     '10-6' : 'Isaiah 26:4',
@@ -373,7 +373,7 @@ const DAILY_VERSE = {
     '10-12' : 'Proverbs 19:20-21',
     '10-13' : 'Jeremiah 29:11',
     '10-14' : 'Romans 12:2',
-    '10-15' : '2 Samuel 7:22',
+    '10-15' : 'II Samuel 7:22',
     '10-16' : 'Psalm 19:14',
     '10-17' : 'Psalm 25:14-15',
     '10-18' : 'Psalm 27:14',
@@ -384,42 +384,42 @@ const DAILY_VERSE = {
     '10-23' : 'Galatians 6:2',
     '10-24' : 'Proverbs 9:10',
     '10-25' : 'Ephesians 5:19-20',
-    '10-26' : '2 Timothy 3:16-17',
+    '10-26' : 'II Timothy 3:16-17',
     '10-27' : 'Hebrews 4:12',
-    '10-28' : '1 Peter 1:24-25',
+    '10-28' : 'I Peter 1:24-25',
     '10-29' : 'Romans 12:1',
     '10-30' : 'Ephesians 2:8-9',
-    '10-31' : '1 Peter 5:8-9',
+    '10-31' : 'I Peter 5:8-9',
     '11-1' : 'Ephesians 1:18',
-    '11-2' : '1 Peter 2:9',
+    '11-2' : 'I Peter 2:9',
     '11-3' : 'Romans 13:1',
-    '11-4' : '2 Corinthians 3:6',
+    '11-4' : 'II Corinthians 3:6',
     '11-5' : 'Romans 13:6',
     '11-6' : 'Ephesians 1:9-10',
-    '11-7' : '1 Timothy 2:1-2',
+    '11-7' : 'I Timothy 2:1-2',
     '11-8' : 'Joshua 24:15',
     '11-9' : 'Isaiah 1:18',
     '11-10' : 'Job 37:5-6',
-    '11-11' : '1 John 2:15-16',
+    '11-11' : 'I John 2:15-16',
     '11-12' : 'Colossians 1:9',
-    '11-13' : '1 Peter 2:15-16',
-    '11-14' : '1 Peter 3:18',
+    '11-13' : 'I Peter 2:15-16',
+    '11-14' : 'I Peter 3:18',
     '11-15' : 'Psalm 119:143',
     '11-16' : 'Psalm 119:18',
     '11-17' : 'Psalm 119:105',
     '11-18' : 'John 17:17',
     '11-19' : 'Psalm 1:1-2',
     '11-20' : 'Psalm 95:1-2',
-    '11-21' : '1 Corinthians 1:4-5',
+    '11-21' : 'I Corinthians 1:4-5',
     '11-22' : 'Colossians 3:15',
     '11-23' : 'Psalm 100:4-5',
     '11-24' : 'Colossians 2:6-7',
     '11-25' : 'Colossians 3:17',
     '11-26' : 'Hebrews 12:28',
     '11-27' : 'Colossians 3:16',
-    '11-28' : '1 Chronicles 16:8',
+    '11-28' : 'I Chronicles 16:8',
     '11-29' : 'Psalm 136:1,26',
-    '11-30' : '2 Peter 3:10-11',
+    '11-30' : 'II Peter 3:10-11',
     '12-1' : 'John 1:1-2, 14',
     '12-2' : 'Hebrews 1:1-2',
     '12-3' : 'John 6:35',
@@ -482,6 +482,19 @@ function readCmdOutputAsync(cmd, callback){
     } catch (err) {
         global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
     }
+}
+/**
+ * Read command line output synchorous.
+ */
+function readCmdOutputSync(cmd) {
+    let str = null;
+    try {
+        let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
+        str = stdout.toString();
+    } catch (err) {
+        global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
+    }
+    return str;
 }
 /**
  * BibleApplicaton:
@@ -566,28 +579,21 @@ DailyVerse.prototype = {
         this._versionPane.setCurrent(BIBLE_VERSION[0]);
     },
     onVersionChanged: function(version){
-        let date = new Date();
-        let timestamp = (date.getMonth()+1) + '-' + date.getDate();
-        let cmd = 'diatheke -b %s -k %s'.format(version, DAILY_VERSE[timestamp]);
-        let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-        if (success && exit_status == 0){
-            stdout = stdout.toString();
+        try{
+            let date = new Date();
+            let timestamp = (date.getMonth()+1) + '-' + date.getDate();
+            let cmd = 'diatheke -b %s -k %s'.format(version, DAILY_VERSE[timestamp]);
+            let stdout = readCmdOutputSync(cmd);
             let text = stdout.replace(/^[^\d]+[\d:\s]+/mg, '')
                 .replace(/\n\(.*\)\n$/, '')
                 .replace(/\u3000/g, '').replace(/\n/g, '');
             this._verse.set_text(text);
-            // update ref label
-            let book_name = stdout.match(/^([\dA-Za-z\s]+)\s+\d+:\d+/);
-            let chapter_name = DAILY_VERSE[timestamp].match(/(\d+):[\d-,\s]*/);
-            if (book_name == null || chapter_name == null) {
-                this._ref.label = '';
-                this._ref._book = '';
-                this._ref._chapter = 0;
-            } else {
-                this._ref.label = _(book_name[1]) + ' ' + chapter_name[0];
-                this._ref._book = book_name[1];
-                this._ref._chapter = parseInt(chapter_name[1]);
-            }
+            let ref = DAILY_VERSE[timestamp].match(/^([^\d]+)\s+(\d+):([\d-,\s]*)/);
+            this._ref.label = _(ref[1]) + ' ' + ref[2] + ':' + ref[3];
+            this._ref._book = ref[1];
+            this._ref._chapter = parseInt(ref[2]);
+        } catch (err) {
+            global.logError('['+err.lineNumber+'] ' + err.name +' : '+err.message);
         }
     }
 };
@@ -983,12 +989,10 @@ Indicator.prototype = {
             this._settings = new Gio.Settings({ schema: BIBLE_SETTINGS_SCHEMA });
             let modules = this._settings.get_strv(SCHEMA_KEY_ENABLED_VERSIONS);
             let cmd = 'diatheke -b system -k modulelistnames';
-            let [success, stdout, stderr, exit_status] = GLib.spawn_command_line_sync(cmd);
-            if (success && exit_status == 0){
-                let installed = stdout.toString().trim().split('\n');
-                for (let i=0;i<modules.length;i++) {
-                    if (installed.indexOf(modules[i])!=-1) BIBLE_VERSION.push(modules[i]);
-                }
+            let stdout = readCmdOutputSync(cmd);
+            let installed = stdout.trim().split('\n');
+            for (let i=0;i<modules.length;i++) {
+                if (installed.indexOf(modules[i])!=-1) BIBLE_VERSION.push(modules[i]);
             }
             if (BIBLE_VERSION.length == 0) throw new RangeError(_('No bible text modules found.'));
             //
