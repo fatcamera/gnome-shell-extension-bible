@@ -927,7 +927,7 @@ Search.prototype = {
                 .replace(/\n/g, '');
             let button = this._verseButton[i%SEARCH_PAGE_SIZE];
             let current = this._verses[i];
-            button.set_label(_(current.book) + ' ' + current.chapter + ':'+current.verse+' '+text);
+            button.set_label(_(BIBLE_BOOK[current.book].abbr) + ' ' + current.chapter + ':'+current.verse+' '+text);
             button._book = current.book;
             button._chapter = current.chapter;
         }
