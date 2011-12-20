@@ -751,6 +751,7 @@ VerseReader.prototype = {
                 this._chapter = chapter_;
                 this._ref.set_text(_(this._book) + ' ' + this._chapter);
                 let cmd = 'diatheke -b %s -k %s %d'.format(this._versionPane.version, this._book, this._chapter);
+                this._verse.set_text('');
                 readCmdOutputAsync(cmd, Lang.bind(this, this._onRead));
             }
         } else {
