@@ -15,6 +15,7 @@ const SEARCH_PAGE_SIZE = 19;
 const BIBLE_SETTINGS_SCHEMA = 'org.gnome.shell.extensions.bible';
 const SCHEMA_KEY_ENABLED_VERSIONS = 'enabled-versions';
 const TERM = '\u0001';
+const HISTORY_MAX = 10;
 let BIBLE_VERSION = [];
 const BIBLE_BOOK = {
     'Genesis': {abbr:'ge',chapter:50,old:true,next:'Exodus',prev:'Revelation of John'},
@@ -703,22 +704,34 @@ VerseReader.prototype = {
         BibleApplication.prototype._init.call(this, owner, '\u270e');
         this._actor = new St.BoxLayout({style_class:'verse-reader',vertical:true});
         //
-        this._book = '';
-        this._chapter = 0;
+        this._history = [{version:BIBLE_VERSION[0],book:'Genesis',chapter:1}];
+        this._ptr = 0;
         //
         let layout = new St.BoxLayout({style_class:'nav-area'});
         let button = new St.Button({ label:'\u25c0'});
+        //button.set_tooltip_text(_('Previous book'));
         button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
         layout.add(button, {x_align:St.Align.START,x_fill:false,expand:false});
         button = new St.Button({ label:'\u25c1'});
+        //button.set_tooltip_text(_('Previous chapter'));
         button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
         layout.add(button, {x_align:St.Align.START,x_fill:false,expand:false});
+        button = new St.Button({ label:'\u25c4'});
+        //button.set_tooltip_text(_('Go back'));
+        button.connect('clicked', Lang.bind(this, this._onHistoryButtonClicked));
+        layout.add(button, {x_align:St.Align.MIDDLE,x_fill:false,expand:false});
         this._ref = new St.Label({text:'', style_class:'ref-label'});
         layout.add(this._ref,{x_align:St.Align.MIDDLE,x_fill:false,expand:true});
+        button = new St.Button({ label:'\u25ba' });
+        //button.set_tooltip_text(_('Go forward'));
+        button.connect('clicked', Lang.bind(this, this._onHistoryButtonClicked));
+        layout.add(button,{x_align:St.Align.MIDDLE,x_fill:false,expand:false});
         button = new St.Button({ label:'\u25b7' });
+        //button.set_tooltip_text(_('Next chapter'));
         button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
         layout.add(button,{x_align:St.Align.END,x_fill:false,expand:false});
         button = new St.Button({ label:'\u25b6'});
+        //button.set_tooltip_text(_('Next book'));
         button.connect('clicked', Lang.bind(this, this._onNavButtonClicked));
         layout.add(button, {x_align:St.Align.END,x_fill:false,expand:false});
         this._actor.add(layout,{x_align:St.Align.MIDDLE,x_fill:true,expand:false});
@@ -735,24 +748,34 @@ VerseReader.prototype = {
         this._actor.add(this._verseScroller, {x_fill:true,y_fill:true,y_align: St.Align.START,expand:true});
         this._versionPane = new VersionPane(this);
         this._actor.add(this._versionPane.actor, {x_align:St.Align.MIDDLE,x_fill:false,y_align:St.Align.END,y_fill:false,expand:false});
-        this._versionPane.setCurrent(BIBLE_VERSION[0]);
+        //
+        this._refresh();
+    },
+    _refresh: function(){
+        let current = this._history[this._ptr];
+        let cmd = 'diatheke -b %s -k %s %d'.format(current.version, current.book, current.chapter);
+        this._versionPane.setCurrent(current.version);
+        this._ref.set_text(_(current.book) + ' ' + current.chapter);
+        this._verse.set_text('');
+        readCmdOutputAsync(cmd, Lang.bind(this, this._onRead));
     },
     navigate: function(version, book, chapter) {
-        let version_ = version == '' ? this._versionPane.version : version;
-        let book_ = book == '' ? this._book : book;
-        let chapter_ = chapter > 0 ? chapter : this._chapter;
+        let current = this._history[this._ptr];
+        let version_ = version == '' ? current.version : version;
+        let book_ = book == '' ? current.book : book;
+        let chapter_ = chapter > 0 ? chapter : current.chapter;
         if (BIBLE_VERSION.indexOf(version_) != -1 && 
             book_ in BIBLE_BOOK &&
             chapter_ > 0 && chapter_ <= BIBLE_BOOK[book_].chapter) {
-            let changed = version_ != this._version || book_ != this._book || chapter != this._chapter;
+            let changed = version_ != current.version || book_ != current.book || chapter_ != current.chapter;
             if (changed) {
-                this._versionPane.setCurrent(version_);
-                this._book = book_;
-                this._chapter = chapter_;
-                this._ref.set_text(_(this._book) + ' ' + this._chapter);
-                let cmd = 'diatheke -b %s -k %s %d'.format(this._versionPane.version, this._book, this._chapter);
-                this._verse.set_text('');
-                readCmdOutputAsync(cmd, Lang.bind(this, this._onRead));
+                while (this._ptr > 0){
+                    this._history.shift();
+                    this._ptr --;
+                }
+                this._history.unshift({version:version_,book:book_,chapter:chapter_});
+                while(this._history.length > HISTORY_MAX) this._history.pop();
+                this._refresh();
             }
         } else {
             global.log('Invalid bible key (%s, %s, %d)'.format(version, book, chapter));
@@ -760,11 +783,29 @@ VerseReader.prototype = {
     },
     _onNavButtonClicked: function(sender) {
         if (this._book == '') return true;
+        let current = this._history[this._ptr];
         switch(sender.label){
-            case '\u25c0':this.navigate('', BIBLE_BOOK[this._book].prev, 1);break;
-            case '\u25c1':this.navigate('', this._book, this._chapter - 1);break;
-            case '\u25b7':this.navigate('', this._book, this._chapter + 1);break;
-            case '\u25b6':this.navigate('', BIBLE_BOOK[this._book].next, 1);break;
+            case '\u25c0':this.navigate('', BIBLE_BOOK[current.book].prev, 1);break;
+            case '\u25c1':this.navigate('', current.book, current.chapter - 1);break;
+            case '\u25b7':this.navigate('', current.book, current.chapter + 1);break;
+            case '\u25b6':this.navigate('', BIBLE_BOOK[current.book].next, 1);break;
+        }
+        return true;
+    },
+    _onHistoryButtonClicked: function(sender) {
+        switch(sender.label){
+            case '\u25c4':
+                if (this._history.length > this._ptr + 1) {
+                    this._ptr ++;
+                    this._refresh();
+                }
+                break;
+            case '\u25ba':
+                if (this._ptr > 0) {
+                    this._ptr --;
+                    this._refresh();
+                }
+                break;
         }
         return true;
     },
