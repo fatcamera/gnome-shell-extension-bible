@@ -1088,6 +1088,6 @@ function main(metadata) {
     Gettext.bindtextdomain("gnome-shell-extension-bible", metadata.path + '/locale');
     Gettext.textdomain("gnome-shell-extension-bible");
 
-    Panel.STANDARD_TRAY_ICON_ORDER.unshift('tool');
-    Panel.STANDARD_TRAY_ICON_SHELL_IMPLEMENTATION['tool'] = Indicator;
+    Panel.STANDARD_TRAY_ICON_ORDER.unshift('bible');
+    Panel.STANDARD_TRAY_ICON_SHELL_IMPLEMENTATION['bible'] = Indicator;
 }
