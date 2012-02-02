@@ -3,6 +3,7 @@ const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Panel = imports.ui.panel;
+const Main = imports.ui.main;
 const PanelMenu = imports.ui.panelMenu;
 const PopupMenu = imports.ui.popupMenu;
 const Pango = imports.gi.Pango;
@@ -1084,10 +1085,15 @@ Indicator.prototype = {
         this.setApplication(this._verseReader);
     }
 };
-function main(metadata) {
+function init(metadata) {
     Gettext.bindtextdomain("gnome-shell-extension-bible", metadata.path + '/locale');
     Gettext.textdomain("gnome-shell-extension-bible");
-
-    Panel.STANDARD_TRAY_ICON_ORDER.unshift('bible');
-    Panel.STANDARD_TRAY_ICON_SHELL_IMPLEMENTATION['bible'] = Indicator;
+}
+function enable() {
+    _indicator = new Indicator();
+    Main.panel.addToStatusArea('bible', _indicator);
+}
+function disable() {
+    _indicator.destroy();
+    _indicator = null;
 }
