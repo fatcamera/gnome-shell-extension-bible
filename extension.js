@@ -1027,7 +1027,7 @@ function Indicator() { this._init.apply(this, arguments); }
 Indicator.prototype = {
     __proto__: PanelMenu.SystemStatusButton.prototype,
     _init: function() {
-        PanelMenu.SystemStatusButton.prototype._init.call(this, 'emblem-favorite', null);
+        PanelMenu.SystemStatusButton.prototype._init.call(this, 'face-angel', null);
         try{
             this._settings = new Gio.Settings({ schema: BIBLE_SETTINGS_SCHEMA });
             let modules = this._settings.get_strv(SCHEMA_KEY_ENABLED_VERSIONS);
@@ -1090,7 +1090,7 @@ function init(metadata) {
     Gettext.textdomain("gnome-shell-extension-bible");
 }
 function enable() {
-    _indicator = new Indicator();
+    let _indicator = new Indicator();
     Main.panel.addToStatusArea('bible', _indicator);
 }
 function disable() {
